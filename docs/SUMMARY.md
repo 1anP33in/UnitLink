@@ -1,6 +1,9 @@
 # Table of contents
 
+## Welcome
+
 * [Welcome](README.md)
+* [Showcase](welcome/showcase.md)
 
 ## Getting Started
 
