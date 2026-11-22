@@ -3,6 +3,7 @@
 -- coords -> street / city / county names (game natives, client only).
 ---------------------------------------------------------------------
 local isOpen = false
+local mode = nil -- 'cad' | 'civ'
 local reqSeq = 0
 local pending = {}
 local tabletProp = nil
@@ -117,8 +118,9 @@ local function closeTablet()
     if not isOpen then return end
     isOpen = false
     SetNuiFocus(false, false)
-    SendNUIMessage({ action = 'close' })
-    TriggerServerEvent('unitlink:server:closed')
+    SendNUIMessage({ action = mode == 'civ' and 'closeCiv' or 'close' })
+    if mode == 'cad' then TriggerServerEvent('unitlink:server:closed') end
+    mode = nil
     stopTablet()
 end
 
@@ -128,11 +130,26 @@ local function openTablet()
     local r = request('open')
     if not r.ok then return notify(r.data or 'Could not open the CAD.', 'error') end
     decorateBoard(r.data.board)
-    isOpen = true
+    isOpen, mode = true, 'cad'
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'open', data = r.data })
     CreateThread(startTablet)
 end
+
+-- /civ: Civilian ID (create / pick the civilian profile you are playing)
+local function openCiv()
+    if isOpen then return closeTablet() end
+    if IsPauseMenuActive() then return end
+    local r = request('civ.list')
+    if not r.ok then return notify(r.data or 'Could not open Civilian ID.', 'error') end
+    if r.data.mode == 'core' then
+        return notify('Your character is managed by UnitLink-Core on this server.', 'info')
+    end
+    isOpen, mode = true, 'civ'
+    SetNuiFocus(true, true)
+    SendNUIMessage({ action = 'openCiv', data = r.data })
+end
+RegisterCommand(Config.Civ.command, function() CreateThread(openCiv) end, false)
 
 RegisterCommand(Config.Command, function() CreateThread(openTablet) end, false)
 RegisterCommand('+unitlink_open', function() CreateThread(openTablet) end, false)
@@ -141,6 +158,7 @@ RegisterKeyMapping('+unitlink_open', 'Open ' .. Config.Name .. ' CAD', 'keyboard
 CreateThread(function()
     Wait(1000)
     TriggerEvent('chat:addSuggestion', '/' .. Config.Command, 'Open the ' .. Config.Name .. ' CAD')
+    TriggerEvent('chat:addSuggestion', '/' .. Config.Civ.command, 'Civilian ID: create or pick your civilian profile')
     TriggerEvent('chat:removeSuggestion', '/+unitlink_open')
     TriggerEvent('chat:removeSuggestion', '/-unitlink_open')
 end)
@@ -175,7 +193,7 @@ end)
 
 -- server pushes (board, notes, alerts, signal 100, force close)
 RegisterNetEvent('unitlink:client:push', function(kind, data)
-    if not isOpen then return end
+    if not isOpen or mode ~= 'cad' then return end
     if kind == 'forceClose' then
         closeTablet()
         return notify(data or 'CAD closed.', 'warning')
@@ -186,7 +204,7 @@ end)
 
 -- going off duty closes the tablet
 AddEventHandler('unitlink-police:dutyChanged', function(onDuty)
-    if not onDuty then closeTablet() end
+    if not onDuty and mode == 'cad' then closeTablet() end
 end)
 
 AddEventHandler('onResourceStop', function(res)

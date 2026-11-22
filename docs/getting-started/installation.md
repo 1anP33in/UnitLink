@@ -9,25 +9,28 @@ Keep the `[UnitLink]` category folder, exactly like this:
 ```
 resources/
 └── [UnitLink]/
-    ├── UnitLink-Core
     ├── UnitLink-UI
     ├── UnitLink-Police
-    └── UnitLink-CAD
+    ├── UnitLink-CAD
+    ├── UnitLink-HUD
+    └── UnitLink-Core      (optional)
 ```
 {% endstep %}
 
 {% step %}
 ### Start order in server.cfg
 
-Each script needs the ones above it, so the order matters:
+Each script needs the ones above it, so the order matters. This is the **standalone** setup, with no framework:
 
 ```cfg
 ensure oxmysql
-ensure UnitLink-Core
 ensure UnitLink-UI
 ensure UnitLink-Police
 ensure UnitLink-CAD
+ensure UnitLink-HUD
 ```
+
+UnitLink-Core is **optional**. Only add `ensure UnitLink-Core` (after oxmysql) if you want its character system. Without it, people come from `/civ` profiles and permissions are ACE.
 {% endstep %}
 
 {% step %}
@@ -41,7 +44,7 @@ Database, Discord bot token and webhooks go in `server.cfg`. See [Server Config 
 
 Start the server. The database tables are created automatically:
 * UnitLink creates its `ul_*` tables (`Config.AutoInstallSql = true`).
-* UnitLink-Core and UnitLink-Police create their own.
+* UnitLink-Police stores duty hours itself (and UnitLink-Core makes its own tables if you run it).
 
 If you'd rather create UnitLink's tables yourself, run `UnitLink-CAD/sql/install.sql`.
 {% endstep %}
@@ -49,7 +52,13 @@ If you'd rather create UnitLink's tables yourself, run `UnitLink-CAD/sql/install
 {% step %}
 ### Give people access
 
-In the UnitLink-Core dashboard (`/ulcore`), give a character a department group, for example `sasp`. They can then go on duty with `/duty` and open UnitLink with `/cad` or **F5**.
+Add ACE permissions in `server.cfg`. Copy the groups from [ACE Permissions](ace-permissions.md), then add each officer's license:
+
+```cfg
+add_principal identifier.license:REPLACE_WITH_LICENSE group.sasp
+```
+
+They can then go on duty with `/duty` and open UnitLink with `/cad` or **F5**. Civilians make their profile with `/civ`.
 {% endstep %}
 {% endstepper %}
 

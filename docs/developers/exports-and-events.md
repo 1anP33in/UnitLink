@@ -29,6 +29,16 @@ Older exports: `IsOnDuty(source)`, `GetOfficer(source)`, `GetOnDutyOfficers()`, 
 
 Client: `unitlink-police:dutyChanged (onDuty, state)`.
 
+## UnitLink-CAD exports (server)
+
+| Export | Returns |
+|---|---|
+| `GetActiveName(source)` | The name of the civilian profile the player is playing, or `nil` |
+| `GetActiveProfile(source)` | `{ id, firstname, lastname, dateofbirth, gender, nationality, height }`, or `nil` |
+| `GetIdentityMode()` | `'standalone'` (civilian profiles) or `'core'` (UnitLink-Core) |
+
+UnitLink-Police and UnitLink-HUD use `GetActiveName` to show the player's name.
+
 ## UnitLink network events
 
 | Event | Direction | Purpose |

@@ -111,8 +111,8 @@ function UL.officer(src)
     if Config.AccessFlag and not (unit.flags and unit.flags[Config.AccessFlag]) then
         return nil, 'Your department does not have CAD access.'
     end
-    local charId = Bridge.characterId(src)
-    if not charId then return nil, 'No character loaded.' end
+    local charId = Identity.officerId(src)
+    if not charId then return nil, Identity.mode() == 'core' and 'No character loaded.' or 'Could not identify your account.' end
     local first, last = unit.name:match('^(%S+)%s+(.+)$')
     local short = last and (last:upper() .. ',' .. first:sub(1, 1):upper()) or unit.name:upper()
     return {
@@ -137,6 +137,21 @@ RegisterNetEvent('unitlink:server:req', function(reqId, action, payload)
     local function reply(ok, data)
         TriggerClientEvent('unitlink:client:res', src, reqId, ok == true, data)
     end
+    -- /civ requests: anyone, no duty needed (server/identity.lua)
+    local ch = UL.civHandlers and UL.civHandlers[action]
+    if ch then
+        if limited(src) then return reply(false, 'Slow down.') end
+        if not UL.ready then return reply(false, 'Database is not ready.') end
+        local owner = Identity.owner(src)
+        if not owner then return reply(false, 'Could not identify your account.') end
+        local ok, success, data = pcall(ch, src, owner, type(payload) == 'table' and payload or {})
+        if not ok then
+            UL.log('^1error in "' .. action .. '": ' .. tostring(success) .. '^7')
+            return reply(false, 'Server error. Try again.')
+        end
+        return reply(success, data)
+    end
+
     local h = UL.handlers[action]
     if not h then return reply(false, 'Unknown request.') end
     if limited(src) then return reply(false, 'Slow down.') end

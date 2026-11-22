@@ -33,5 +33,5 @@ Yes. You just won't see its notifications.
 <details>
 <summary>Can I change the command, key or laws?</summary>
 
-Yes. See [UnitLink Config](../configuration/ulcore-config.md) and [Editing the Laws](../configuration/laws.md).
+Yes. See [UnitLink Config](../configuration/unitlink-config.md) and [Editing the Laws](../configuration/laws.md).
 </details>

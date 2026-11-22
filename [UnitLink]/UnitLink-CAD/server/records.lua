@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------
 -- Records: person search, state returns, citations, arrests, reports,
--- warrants. People come from UnitLink-Core (read only); records are UnitLink's.
+-- warrants. People come from server/identity.lua (civilian profiles or
+-- UnitLink-Core); records are UnitLink's.
 ---------------------------------------------------------------------
 local PREFIX = { citation = 'C-', arrest = 'A-', report = 'R-', warrant = 'W-' }
 local LAWS = {}
@@ -12,7 +13,7 @@ function UL.recordNo(type, id) return (PREFIX[type] or '#') .. tostring(id) end
 local function fullName(c) return ('%s %s'):format(c.firstname, c.lastname) end
 
 ---------------------------------------------------------------------
--- Licenses (UnitLink-Core metadata)
+-- Licenses (civilian profile or UnitLink-Core metadata)
 ---------------------------------------------------------------------
 local function licenses(charId)
     local raw = Bridge.metadata(charId, Config.Licenses.metadataKey)
@@ -66,7 +67,7 @@ UL.handle('searchPeople', nil, function(o, p)
     local q = UL.clean(p.q, 64)
     if not q or #q < 2 then return false, 'Enter at least 2 characters.' end
     local rows = Bridge.searchCharacters(q)
-    if not rows then return false, 'Character records are unavailable (UnitLink-Core).' end
+    if not rows then return false, 'Person records are unavailable right now.' end
     local ids = {}
     for _, r in ipairs(rows) do ids[#ids + 1] = r.id end
     local flags = flagsFor(ids)
@@ -111,6 +112,20 @@ UL.handle('runReturn', nil, function(o, p)
         r.data = nil
     end
 
+    -- fines: on record only, never charged; outstanding until they expire
+    local fines = {}
+    if Config.Fines and Config.Fines.enabled then
+        local now = os.time()
+        for _, r in ipairs(UL.DB.query([[SELECT id, data, UNIX_TIMESTAMP(created_at) AS at FROM ul_records
+            WHERE subject_char = ? AND type = 'citation' ORDER BY id DESC LIMIT 25]], { id }) or {}) do
+            local d = UL.decode(r.data, {})
+            if (tonumber(d.fine) or 0) > 0 then
+                local expires = tonumber(d.fineExpires) or (r.at + Config.Fines.expireDays * 86400)
+                fines[#fines + 1] = { number = UL.recordNo('citation', r.id), amount = d.fine, at = r.at, expires = expires, outstanding = expires > now }
+            end
+        end
+    end
+
     local hit = #warrants > 0
     local callId = UL.int(p.callId)
     if not callId and o.calls[1] then callId = o.calls[1] end
@@ -119,7 +134,7 @@ UL.handle('runReturn', nil, function(o, p)
 
     return true, {
         person = { id = c.id, first = c.firstname, last = c.lastname, dob = c.dateofbirth, gender = c.gender, nationality = c.nationality, height = c.height },
-        licenses = lic, warrants = warrants, alerts = alerts, history = history, records = records,
+        licenses = lic, warrants = warrants, alerts = alerts, history = history, records = records, fines = fines,
         suspendAt = Config.Licenses.suspendAt, runBy = o.label, runAt = os.time(),
     }
 end)
@@ -144,14 +159,15 @@ UL.handle('submitRecord', nil, function(o, p)
     local subject = subjectId and Bridge.character(subjectId) or nil
     if rtype ~= 'report' and not subject then return false, 'Select a subject.' end
 
-    local charges, points = {}, 0
+    local charges, points, fine = {}, 0, 0
     if type(p.charges) == 'table' then
         for i, code in ipairs(p.charges) do
             if i > 20 then break end
             local law = LAWS[code]
             if law then
-                charges[#charges + 1] = { code = law.code, offense = law.offense, class = law.class, points = law.points or 0 }
+                charges[#charges + 1] = { code = law.code, offense = law.offense, class = law.class, points = law.points or 0, fine = law.fine or 0 }
                 points = points + (law.points or 0)
+                fine = fine + (law.fine or 0)
             end
         end
     end
@@ -170,6 +186,11 @@ UL.handle('submitRecord', nil, function(o, p)
         involved = UL.clean(p.involved, 300),
     }
     if rtype == 'citation' and type(p.court) == 'string' and p.court:match('^%d%d%d%d%-%d%d%-%d%d$') then data.court = p.court end
+    -- fine: written on the citation only. Nothing is ever taken from the player.
+    if rtype == 'citation' and Config.Fines and Config.Fines.enabled and fine > 0 then
+        data.fine = fine
+        data.fineExpires = os.time() + Config.Fines.expireDays * 86400
+    end
     if rtype == 'arrest' then data.booking = inList(Config.Bookings, p.booking) and p.booking or Config.Bookings[1] end
     if rtype == 'report' then data.incidentType = inList(Config.ReportTypes, p.incidentType) and p.incidentType or Config.ReportTypes[1] end
     if rtype == 'warrant' then
@@ -202,6 +223,10 @@ UL.handle('submitRecord', nil, function(o, p)
         local total, suspended = addPoints(subjectId, points)
         if total then
             extra = suspended and ('License SUSPENDED (%d points).'):format(total) or ('Driver points now %d/%d.'):format(total, Config.Licenses.suspendAt)
+        end
+        if data.fine then
+            local f = ('Fine %s%d on record, expires in %d days.'):format(Config.Fines.symbol or '$', data.fine, Config.Fines.expireDays)
+            extra = extra and (extra .. ' ' .. f) or f
         end
     end
     if callId and Bridge.call(callId) then

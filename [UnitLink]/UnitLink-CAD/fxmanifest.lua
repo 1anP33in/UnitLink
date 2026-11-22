@@ -4,14 +4,15 @@ lua54 'yes'
 
 name 'UnitLink-CAD'
 author 'UnitLink'
-description 'UnitLink: CAD / MDT for FiveM roleplay servers (calls, units, records, warrants, alerts)'
-version '1.0.0'
+description 'UnitLink: CAD / MDT for FiveM roleplay servers (calls, units, records, warrants, alerts, civilian profiles)'
+version '1.1.0'
 
--- UnitLink-Police supplies calls and units, UnitLink-Core supplies characters,
--- UnitLink-UI supplies notifications. Start all of them before unitlink.
+-- Standalone: needs only oxmysql and UnitLink-Police (calls, units, duty).
+-- UnitLink-UI (notifications) and UnitLink-Core (characters) are optional:
+-- without UnitLink-Core, people come from UnitLink's own civilian profiles (/civ).
+-- Start order: oxmysql, UnitLink-UI, UnitLink-Police, UnitLink-CAD.
 dependencies {
     'oxmysql',
-    'UnitLink-Core',
     'UnitLink-Police',
 }
 
@@ -20,6 +21,7 @@ shared_script 'config.lua'
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/main.lua',
+    'server/identity.lua',
     'server/bridge.lua',
     'server/calls.lua',
     'server/records.lua',

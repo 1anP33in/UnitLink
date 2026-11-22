@@ -1,7 +1,7 @@
 # Citations & License Points
 
 {% hint style="success" %}
-**UnitLink has no fines.** Citations add **points** to the driver's license instead.
+**No money is ever taken.** Citations add **points** to the driver's license. Each charge also has a **fine**, but the fine is only written on the record and **expires** after a set time (7 days by default). Nothing is charged to anyone.
 {% endhint %}
 
 ## How it works
@@ -17,26 +17,39 @@
 * A citation needs **at least one charge**.
 * Points are added on the server, so the tablet can't fake them.
 
-## Points per charge (default)
+## Fines
 
-| Code | Offense | Points |
+| Setting | Default | Meaning |
 |---|---|---|
-| 2-01 | Speeding (25+ over) | 3 |
-| 2-02 | Speeding (1-24 over) | 2 |
-| 2-03 | Running a Red Light | 2 |
-| 2-04 | Failure to Stop | 1 |
-| 2-05 | Illegal U-Turn | 1 |
-| 2-06 | No Seatbelt | 1 |
-| 2-07 | Reckless Driving | 4 |
-| 2-08 | Driving Under the Influence | 6 |
-| 2-09 | Driving Without a License | 3 |
-| 2-10 | Hit and Run (felony, arrest only) | 6 |
-| 2-11 | Driving on a Suspended License | 4 |
-| 2-12 | Unroadworthy Vehicle | 1 |
+| `Config.Fines.enabled` | `true` | Show fines on citations |
+| `Config.Fines.expireDays` | `7` | Days a fine stays **OUTSTANDING** before it shows as **EXPIRED** |
+| `Config.Fines.symbol` | `$` | Currency symbol shown |
+
+- **Citation form:** shows the fine total as you add charges.
+- **After filing:** the officer sees, for example, "Fine $750 on record, expires in 7 days."
+- **State return:** a **FINES** section lists each fine as OUTSTANDING (with its expiry date) or EXPIRED.
+- **Felonies** have no fine, because they're arrest-only.
+
+## Points and fines per charge (default)
+
+| Code | Offense | Points | Fine |
+|---|---|---|---|
+| 2-01 | Speeding (25+ over) | 3 | $750 |
+| 2-02 | Speeding (1-24 over) | 2 | $250 |
+| 2-03 | Running a Red Light | 2 | $200 |
+| 2-04 | Failure to Stop | 1 | $150 |
+| 2-05 | Illegal U-Turn | 1 | $100 |
+| 2-06 | No Seatbelt | 1 | $100 |
+| 2-07 | Reckless Driving | 4 | $1,000 |
+| 2-08 | Driving Under the Influence | 6 | $1,500 |
+| 2-09 | Driving Without a License | 3 | $500 |
+| 2-10 | Hit and Run (felony, arrest only) | 6 | none |
+| 2-11 | Driving on a Suspended License | 4 | $1,000 |
+| 2-12 | Unroadworthy Vehicle | 1 | $150 |
 
 ## Where licenses are stored
 
-In UnitLink-Core character metadata, under the key `licenses`:
+On the person's **civilian profile** (standalone, see [Civilian ID](../unitlink/civilian-id.md)), or in UnitLink-Core character metadata under the key `licenses` if you run UnitLink-Core. Same shape either way:
 
 ```lua
 licenses = {

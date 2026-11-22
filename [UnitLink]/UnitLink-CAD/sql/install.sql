@@ -82,3 +82,34 @@ CREATE TABLE IF NOT EXISTS `ul_returns` (
     KEY `idx_ul_returns_officer` (`officer_char`, `created_at`),
     KEY `idx_ul_returns_call` (`call_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Standalone identity -------------------------------------------------------
+-- Accounts (by license). Officers are identified by this id in standalone mode.
+CREATE TABLE IF NOT EXISTS `ul_players` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `identifier` VARCHAR(64) NOT NULL,
+    `name` VARCHAR(64) NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `last_seen` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_ul_players_identifier` (`identifier`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Civilian profiles made with /civ. The CAD searches these in standalone mode.
+CREATE TABLE IF NOT EXISTS `ul_civilians` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `owner` VARCHAR(64) NOT NULL,             -- account identifier (license)
+    `firstname` VARCHAR(32) NOT NULL,
+    `lastname` VARCHAR(32) NOT NULL,
+    `dateofbirth` VARCHAR(10) NOT NULL,       -- YYYY-MM-DD
+    `gender` VARCHAR(16) NOT NULL,
+    `nationality` VARCHAR(32) NOT NULL,
+    `height` SMALLINT UNSIGNED NOT NULL,      -- cm
+    `licenses` LONGTEXT NULL,                 -- JSON, same shape as Config.Licenses
+    `deleted` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `last_used` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_ul_civilians_owner` (`owner`, `deleted`),
+    KEY `idx_ul_civilians_name` (`lastname`, `firstname`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1000;

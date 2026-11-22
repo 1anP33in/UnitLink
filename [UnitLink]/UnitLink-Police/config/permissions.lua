@@ -1,21 +1,19 @@
 ---------------------------------------------------------------------
 -- Duty permissions (checked server side only, fresh on every request)
 --
--- With Config.Framework.enabled = true these are UnitLink Core permission
--- nodes, checked against the player's ACTIVE character via
--- exports['UnitLink-Core']:HasPermission. They come from UnitLink-Core's groups:
+-- STANDALONE (default, Config.Framework.enabled = false): these are plain
+-- FiveM ACE names, checked with IsPlayerAceAllowed on the player's ACCOUNT.
+-- Nothing is stored on characters. In server.cfg:
 --
---   sasp            -> unitlink.sasp.duty          (inherits leo: unitlink.police.duty, unitlink.police.dispatch)
---   sasp_supervisor -> unitlink.sasp.supervisor    (inherits leo_supervisor: unitlink.police.supervisor)
---   sasp_command    -> unitlink.sasp.*
---   ...same for bcso, lsp, dhs, safd, faa
+--   add_ace group.sasp unitlink.sasp.duty allow
+--   add_ace group.sasp_supervisor unitlink.sasp.supervisor allow
+--   add_principal identifier.license:xxxxxxxx group.sasp
 --
--- So assigning a character the `bcso` group in the UnitLink dashboard is all
--- it takes for that character (and only that character) to go on duty
--- as BCSO. Wildcards like unitlink.bcso.* (department command) also match.
+-- Granting the parent node (unitlink.sasp) also allows its children.
+-- The full list, ready to paste, is in aceperms.md at the repo root.
 --
--- With Config.Framework.enabled = false the same strings are used as
--- plain FiveM ACE names (add_ace group.bcso unitlink.bcso.duty allow).
+-- Framework mode (Config.Framework.enabled = true): the same strings are
+-- UnitLink-Core permission nodes on the player's active character.
 ---------------------------------------------------------------------
 Config.Permissions = {
     departments = {

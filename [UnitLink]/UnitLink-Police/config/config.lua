@@ -7,28 +7,33 @@ Config.Enabled = true  -- false = duty, 911 and panic requests are refused
 Config.Debug   = false -- extra console output
 
 ---------------------------------------------------------------------
--- UnitLink Core framework
---   enabled = true : duty access uses UnitLink character permissions
---                    (config/permissions.lua), a character must be
---                    loaded to go on duty, names come from the active
---                    character and duty hours are tracked per character.
---   enabled = false: standalone mode, plain FiveM ACE permissions.
+-- Permissions source
+--   enabled = false (default): STANDALONE. Every duty / supervisor check is a
+--                    plain FiveM ACE check (IsPlayerAceAllowed). Permissions
+--                    belong to the player's account, never to a character.
+--                    Set them in server.cfg; see aceperms.md.
+--   enabled = true : use UnitLink-Core character permissions instead
+--                    (only if you run UnitLink-Core and want per-character
+--                    departments).
 ---------------------------------------------------------------------
 Config.Framework = {
-    enabled          = true,
+    enabled          = false,
     resource         = 'UnitLink-Core',
-    clockOutOnUnload = true, -- switching / unloading a character ends its duty session
+    clockOutOnUnload = true, -- (framework mode) switching / unloading a character ends its duty session
 }
 
--- Standalone mode only: identifier stored with duty records (never sent to
--- clients). With the framework, records use the character id instead.
--- license | discord | fivem | steam   (falls back to license)
+-- Standalone mode: identifier stored with duty records (never sent to
+-- clients). license | discord | fivem | steam   (falls back to license)
 Config.IdentifierType = 'license'
 
 -- Name shown on the roster, 911 calls and logs (runs SERVER side).
--- With the framework this is the active character's name; this function
--- is the fallback (standalone mode / no character).
+-- Standalone: the player's active UnitLink civilian profile (/civ), or their
+-- FiveM name if they haven't picked one.
 Config.GetPlayerDisplayName = function(source)
+    if GetResourceState('UnitLink-CAD') == 'started' then
+        local ok, name = pcall(function() return exports['UnitLink-CAD']:GetActiveName(source) end)
+        if ok and type(name) == 'string' and name ~= '' then return name end
+    end
     return GetPlayerName(source)
 end
 

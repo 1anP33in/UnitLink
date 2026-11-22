@@ -6,7 +6,7 @@
 
 ```cfg
 # database (oxmysql)
-set mysql_connection_string "mysql://user:password@localhost/ulcore?charset=utf8mb4"
+set mysql_connection_string "mysql://user:password@localhost/unitlink?charset=utf8mb4"
 
 # unitlink-core: Discord role sync bot token
 set unitlink_discord_token "YOUR_BOT_TOKEN"

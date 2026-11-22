@@ -7,12 +7,14 @@
 * [Download](getting-started/download.md)
 * [Installation](getting-started/installation.md)
 * [Server Config & Secrets](getting-started/server-config.md)
+* [ACE Permissions](getting-started/ace-permissions.md)
 * [Updating](getting-started/updating.md)
 
 ## Using UnitLink
 
 * [Overview](unitlink/overview.md)
 * [Opening the Tablet](unitlink/opening-the-tablet.md)
+* [Civilian ID (/civ)](unitlink/civilian-id.md)
 * [CAD Board](unitlink/cad-board.md)
 * [Call Records](unitlink/call-records.md)
 * [Name Search & State Returns](unitlink/name-search.md)
@@ -29,14 +31,15 @@
 
 ## Configuration
 
-* [UnitLink Config](configuration/ulcore-config.md)
+* [UnitLink Config](configuration/unitlink-config.md)
 * [Editing the Laws](configuration/laws.md)
 
-## Required Scripts
+## Scripts
 
-* [UnitLink-Core](scripts/core.md)
 * [UnitLink-Police](scripts/police.md)
 * [UnitLink-UI](scripts/ui.md)
+* [UnitLink-HUD](scripts/hud.md)
+* [UnitLink-Core (optional)](scripts/core.md)
 
 ## Developers
 

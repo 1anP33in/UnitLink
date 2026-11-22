@@ -4,8 +4,8 @@
 -- UnitLink-Police (server exports): GetUnits, GetCalls, GetCall, CreateCall,
 --   UpdateCall, AssignUnit, UnassignUnit, CloseCall, SetUnitStatus, IsSupervisor
 --   local events: callCreated, callUpdated, callClosed, unitsChanged
--- UnitLink-Core (server exports): GetCharacterId, SearchCharacters,
---   GetCharacterById, GetCharacterMetadata, SetCharacterMetadata
+-- People (names, DOB, licenses): server/identity.lua (UnitLink-Core
+--   characters, or standalone civilian profiles)
 ---------------------------------------------------------------------
 Bridge = {}
 
@@ -67,32 +67,14 @@ function Bridge.isSupervisor(src)
 end
 
 ---------------------------------------------------------------------
--- UnitLink-Core
+-- People: UnitLink-Core characters or standalone civilian profiles
+-- (server/identity.lua decides which)
 ---------------------------------------------------------------------
-function Bridge.characterId(src)
-    local ok, id = call('UnitLink-Core', 'GetCharacterId', src)
-    return ok and tonumber(id) or nil
-end
-
-function Bridge.searchCharacters(query)
-    local ok, rows = call('UnitLink-Core', 'SearchCharacters', query, 25)
-    return ok and rows or nil
-end
-
-function Bridge.character(id)
-    local ok, row = call('UnitLink-Core', 'GetCharacterById', id)
-    return ok and row or nil
-end
-
-function Bridge.metadata(id, key)
-    local ok, v = call('UnitLink-Core', 'GetCharacterMetadata', id, key)
-    return ok and v or nil
-end
-
-function Bridge.setMetadata(id, key, value)
-    local ok, a = call('UnitLink-Core', 'SetCharacterMetadata', id, key, value)
-    return ok and a ~= false
-end
+function Bridge.characterId(src) return Identity.officerId(src) end
+function Bridge.searchCharacters(query) return Identity.search(query) end
+function Bridge.character(id) return Identity.get(id) end
+function Bridge.metadata(id) return Identity.getLicenses(id) end
+function Bridge.setMetadata(id, _, value) return Identity.setLicenses(id, value) end
 
 ---------------------------------------------------------------------
 -- Positions (OneSync, server side) for the units grid

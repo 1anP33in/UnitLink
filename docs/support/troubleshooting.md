@@ -4,7 +4,8 @@
 |---|---|
 | `/cad` says you must be on duty | Go on duty with `/duty` first. |
 | `/cad` says no access | Your department type needs `receives911` (`Config.AccessFlag`). SAFR can't open it by default. |
-| "You don't have access to any department" | The **character** needs the department group (for example `sasp`) in `/ulcore`. Make sure you're on the right character. |
+| "You don't have access to any department" | The player's **license** needs a department group in `server.cfg`, for example `add_principal identifier.license:... group.sasp`. See [ACE Permissions](../getting-started/ace-permissions.md). |
+| Name search finds nobody (standalone) | People only exist once players make a profile with `/civ`. |
 | Everyone was taken off duty | UnitLink-Core restarted. UnitLink-Police fails closed. |
 | Name search finds nobody | Type at least 2 characters. Make sure UnitLink-Core is started. |
 | Licenses always show VALID / NONE | The character has no `licenses` metadata yet, so the defaults are used. |

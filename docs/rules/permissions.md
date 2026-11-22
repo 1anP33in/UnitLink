@@ -1,30 +1,37 @@
 # Permissions & Access
 
-Permissions follow the **character**, not the account. They're managed in the UnitLink-Core dashboard (`/ulcore`).
+UnitLink uses **FiveM ACE permissions only**. They belong to the player's **account** (license), never to a character, and are set in `server.cfg`.
 
-## Going on duty (UnitLink-Police)
+{% hint style="success" %}
+Ready-to-paste groups and every permission are on the [ACE Permissions](../getting-started/ace-permissions.md) page.
+{% endhint %}
 
-| Department | Go on duty | Supervisor | Group to assign |
-|---|---|---|---|
-| SASP | `unitlink.sasp.duty` | `unitlink.sasp.supervisor` | `sasp` / `sasp_supervisor` / `sasp_command` |
-| BCSO | `unitlink.bcso.duty` | `unitlink.bcso.supervisor` | `bcso` / … |
-| LSP | `unitlink.lsp.duty` | `unitlink.lsp.supervisor` | `lsp` / … |
-| DHS | `unitlink.dhs.duty` | `unitlink.dhs.supervisor` | `dhs` / … |
-| SAFD | `unitlink.safd.duty` | `unitlink.safd.supervisor` | `safd` / … |
-| FAA | `unitlink.faa.duty` | `unitlink.faa.supervisor` | `faa` / … |
+## Going on duty
 
-`unitlink.police.supervisor` (every LEO supervisor and LEO High Command) works across all departments.
+| Department | Go on duty | Supervisor |
+|---|---|---|
+| SASP | `unitlink.sasp.duty` | `unitlink.sasp.supervisor` |
+| BCSO | `unitlink.bcso.duty` | `unitlink.bcso.supervisor` |
+| LSP | `unitlink.lsp.duty` | `unitlink.lsp.supervisor` |
+| DHS | `unitlink.dhs.duty` | `unitlink.dhs.supervisor` |
+| SAFD | `unitlink.safd.duty` | `unitlink.safd.supervisor` |
+| FAA | `unitlink.faa.duty` | `unitlink.faa.supervisor` |
 
-## Opening UnitLink
+`unitlink.police.supervisor` makes someone a supervisor across every LEO department.
 
-* On duty, **and**
-* the department type has `Config.AccessFlag` (default `receives911`, which means LEO), **and**
-* a character is loaded.
+```cfg
+add_ace group.sasp unitlink.sasp.duty allow
+add_principal identifier.license:abc123 group.sasp
+```
+
+## Opening the CAD
+
+You need to be **on duty** in a department whose type receives 911 (`Config.AccessFlag`, LEO by default). There's no separate CAD permission: being on duty is the gate.
 
 ## Server-side checks
 
-Every UnitLink request is checked again on the server: on duty, CAD access, character loaded, and a **rate limit** (`Config.RateLimitMs`, default 250 ms). Supervisor-only actions (approving warrants, Signal 100) are checked on the server too.
+Every UnitLink request is checked again on the server: on duty, CAD access, and a rate limit (`Config.RateLimitMs`, 250 ms). Supervisor-only actions, like approving warrants and Signal 100, check the supervisor permission on the server too.
 
-## Discord roles
+## Optional: UnitLink-Core
 
-UnitLink-Core can give groups based on Discord roles (`config/discord.lua`). The bot token is set in `server.cfg` as `unitlink_discord_token`.
+If you run UnitLink-Core and want departments to follow characters instead, set `Config.Framework.enabled = true` in UnitLink-Police. The same names then become UnitLink-Core character permissions. The standalone default is ACE.

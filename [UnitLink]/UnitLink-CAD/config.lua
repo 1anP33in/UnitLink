@@ -15,6 +15,35 @@ Config.RateLimitMs    = 250     -- minimum ms between CAD requests per player
 Config.AccessFlag = 'receives911'
 
 ---------------------------------------------------------------------
+-- Identity: where people (name, DOB, licenses) come from
+--   'auto'       : UnitLink-Core characters if UnitLink-Core is running,
+--                  otherwise UnitLink's own civilian profiles
+--   'standalone' : always UnitLink civilian profiles (no framework needed)
+--   'core'       : always UnitLink-Core characters
+-- In standalone mode players make up to `maxProfiles` civilian profiles
+-- with /civ and pick which one they are playing. Officers are identified
+-- by their account (ACE permissions are account-level too).
+---------------------------------------------------------------------
+Config.Identity = 'auto'
+Config.CoreResource = 'UnitLink-Core'
+Config.Civ = {
+    command = 'civ',      -- /civ opens the Civilian ID window
+    maxProfiles = 5,
+    minAge = 16, maxAge = 100,
+    nationalities = { 'American', 'Canadian', 'Mexican', 'British', 'Irish', 'German', 'French', 'Italian', 'Spanish', 'Brazilian', 'Colombian', 'Jamaican', 'Nigerian', 'Indian', 'Chinese', 'Japanese', 'Korean', 'Filipino', 'Russian', 'Australian', 'Other' },
+}
+
+---------------------------------------------------------------------
+-- Fines: shown on citations and state returns only. NO money is ever
+-- taken from anyone; a fine is a record that expires after `expireDays`.
+---------------------------------------------------------------------
+Config.Fines = {
+    enabled = true,
+    expireDays = 7,       -- a fine shows as OUTSTANDING until this many days after it was written
+    symbol = '$',
+}
+
+---------------------------------------------------------------------
 -- Unit statuses: CAD code -> UnitLink-Police status
 ---------------------------------------------------------------------
 Config.Statuses = {
@@ -35,10 +64,10 @@ Config.Natures = {
 }
 
 ---------------------------------------------------------------------
--- Licenses live in UnitLink-Core character metadata under this key:
---   licenses = { drivers = { status = 'valid', points = 0 }, firearm = {...}, pilot = {...} }
--- Characters without the key use `defaults`. Citations add driver points;
--- reaching `suspendAt` points suspends a valid driver's license.
+-- Licenses: { drivers = { status = 'valid', points = 0 }, firearm = {...}, pilot = {...} }
+-- Stored on the civilian profile (standalone) or in UnitLink-Core character
+-- metadata under `metadataKey`. People without any use `defaults`.
+-- Citations add driver points; reaching `suspendAt` suspends a valid license.
 ---------------------------------------------------------------------
 Config.Licenses = {
     metadataKey = 'licenses',
@@ -64,42 +93,44 @@ Config.Signal100SupervisorOnly = true
 ---------------------------------------------------------------------
 -- San Andreas Penal Code. class: F felony, M misdemeanor, I infraction.
 -- points = driver license points added by a citation.
+-- fine   = amount shown on the citation (record only, never charged; see Config.Fines).
+--          Felonies are arrest-only, so they have no fine.
 -- aliases help search ("dui" finds Driving Under the Influence).
 ---------------------------------------------------------------------
 Config.Laws = {
-    { code = '1-01', offense = 'Assault',                              class = 'M', points = 0 },
-    { code = '1-02', offense = 'Aggravated Assault',                   class = 'F', points = 0, note = 'Weapon or serious injury' },
-    { code = '1-05', offense = 'Assault on a Peace Officer',           class = 'F', points = 0 },
-    { code = '1-08', offense = 'Armed Robbery',                        class = 'F', points = 0 },
-    { code = '1-09', offense = 'Robbery',                              class = 'F', points = 0 },
-    { code = '1-10', offense = 'Burglary',                             class = 'F', points = 0 },
-    { code = '1-11', offense = 'Petty Theft',                          class = 'M', points = 0 },
-    { code = '1-12', offense = 'Grand Theft Auto',                     class = 'F', points = 0, aliases = { 'gta', 'stolen vehicle' } },
-    { code = '1-14', offense = 'Evading a Peace Officer',              class = 'F', points = 0, note = 'Vehicle pursuit', aliases = { 'pursuit', 'fleeing' } },
-    { code = '1-20', offense = 'Resisting Arrest',                     class = 'M', points = 0 },
-    { code = '1-22', offense = 'Obstruction of Justice',               class = 'M', points = 0 },
-    { code = '1-25', offense = 'Brandishing a Firearm',                class = 'M', points = 0 },
-    { code = '1-26', offense = 'Possession of an Unlicensed Firearm',  class = 'F', points = 0, aliases = { 'ccw', 'gun' } },
-    { code = '1-30', offense = 'Possession of a Controlled Substance', class = 'M', points = 0, aliases = { 'drugs' } },
-    { code = '1-31', offense = 'Possession with Intent to Distribute', class = 'F', points = 0, aliases = { 'drugs', 'pwid' } },
-    { code = '1-40', offense = 'Murder',                               class = 'F', points = 0 },
-    { code = '1-41', offense = 'Attempted Murder',                     class = 'F', points = 0 },
-    { code = '1-45', offense = 'Kidnapping',                           class = 'F', points = 0 },
-    { code = '2-01', offense = 'Speeding (25+ over)',                  class = 'M', points = 3 },
-    { code = '2-02', offense = 'Speeding (1-24 over)',                 class = 'I', points = 2 },
-    { code = '2-03', offense = 'Running a Red Light',                  class = 'I', points = 2 },
-    { code = '2-04', offense = 'Failure to Stop',                      class = 'I', points = 1, aliases = { 'stop sign' } },
-    { code = '2-05', offense = 'Illegal U-Turn',                       class = 'I', points = 1 },
-    { code = '2-06', offense = 'No Seatbelt',                          class = 'I', points = 1 },
-    { code = '2-07', offense = 'Reckless Driving',                     class = 'M', points = 4 },
-    { code = '2-08', offense = 'Driving Under the Influence',          class = 'M', points = 6, note = 'Suspends license at 12 points', aliases = { 'dui', 'dwi', 'drunk' } },
-    { code = '2-09', offense = 'Driving Without a License',            class = 'M', points = 3, aliases = { 'dwl', 'no license' } },
-    { code = '2-10', offense = 'Hit and Run',                          class = 'F', points = 6 },
-    { code = '2-11', offense = 'Driving on a Suspended License',       class = 'M', points = 4, aliases = { 'dws' } },
-    { code = '2-12', offense = 'Unroadworthy Vehicle',                 class = 'I', points = 1 },
-    { code = '3-01', offense = 'Disturbing the Peace',                 class = 'I', points = 0 },
-    { code = '3-02', offense = 'Public Intoxication',                  class = 'I', points = 0 },
-    { code = '3-05', offense = 'Trespassing',                          class = 'M', points = 0 },
-    { code = '3-08', offense = 'Vandalism',                            class = 'M', points = 0 },
-    { code = '4-01', offense = 'Failure to Appear',                    class = 'M', points = 0, aliases = { 'fta' } },
+    { code = '1-01', offense = 'Assault',                              class = 'M', points = 0, fine = 500 },
+    { code = '1-02', offense = 'Aggravated Assault',                   class = 'F', points = 0, fine = 0, note = 'Weapon or serious injury' },
+    { code = '1-05', offense = 'Assault on a Peace Officer',           class = 'F', points = 0, fine = 0 },
+    { code = '1-08', offense = 'Armed Robbery',                        class = 'F', points = 0, fine = 0 },
+    { code = '1-09', offense = 'Robbery',                              class = 'F', points = 0, fine = 0 },
+    { code = '1-10', offense = 'Burglary',                             class = 'F', points = 0, fine = 0 },
+    { code = '1-11', offense = 'Petty Theft',                          class = 'M', points = 0, fine = 400 },
+    { code = '1-12', offense = 'Grand Theft Auto',                     class = 'F', points = 0, fine = 0, aliases = { 'gta', 'stolen vehicle' } },
+    { code = '1-14', offense = 'Evading a Peace Officer',              class = 'F', points = 0, fine = 0, note = 'Vehicle pursuit', aliases = { 'pursuit', 'fleeing' } },
+    { code = '1-20', offense = 'Resisting Arrest',                     class = 'M', points = 0, fine = 750 },
+    { code = '1-22', offense = 'Obstruction of Justice',               class = 'M', points = 0, fine = 750 },
+    { code = '1-25', offense = 'Brandishing a Firearm',                class = 'M', points = 0, fine = 1000 },
+    { code = '1-26', offense = 'Possession of an Unlicensed Firearm',  class = 'F', points = 0, fine = 0, aliases = { 'ccw', 'gun' } },
+    { code = '1-30', offense = 'Possession of a Controlled Substance', class = 'M', points = 0, fine = 1000, aliases = { 'drugs' } },
+    { code = '1-31', offense = 'Possession with Intent to Distribute', class = 'F', points = 0, fine = 0, aliases = { 'drugs', 'pwid' } },
+    { code = '1-40', offense = 'Murder',                               class = 'F', points = 0, fine = 0 },
+    { code = '1-41', offense = 'Attempted Murder',                     class = 'F', points = 0, fine = 0 },
+    { code = '1-45', offense = 'Kidnapping',                           class = 'F', points = 0, fine = 0 },
+    { code = '2-01', offense = 'Speeding (25+ over)',                  class = 'M', points = 3, fine = 750 },
+    { code = '2-02', offense = 'Speeding (1-24 over)',                 class = 'I', points = 2, fine = 250 },
+    { code = '2-03', offense = 'Running a Red Light',                  class = 'I', points = 2, fine = 200 },
+    { code = '2-04', offense = 'Failure to Stop',                      class = 'I', points = 1, fine = 150, aliases = { 'stop sign' } },
+    { code = '2-05', offense = 'Illegal U-Turn',                       class = 'I', points = 1, fine = 100 },
+    { code = '2-06', offense = 'No Seatbelt',                          class = 'I', points = 1, fine = 100 },
+    { code = '2-07', offense = 'Reckless Driving',                     class = 'M', points = 4, fine = 1000 },
+    { code = '2-08', offense = 'Driving Under the Influence',          class = 'M', points = 6, fine = 1500, note = 'Suspends license at 12 points', aliases = { 'dui', 'dwi', 'drunk' } },
+    { code = '2-09', offense = 'Driving Without a License',            class = 'M', points = 3, fine = 500, aliases = { 'dwl', 'no license' } },
+    { code = '2-10', offense = 'Hit and Run',                          class = 'F', points = 6, fine = 0 },
+    { code = '2-11', offense = 'Driving on a Suspended License',       class = 'M', points = 4, fine = 1000, aliases = { 'dws' } },
+    { code = '2-12', offense = 'Unroadworthy Vehicle',                 class = 'I', points = 1, fine = 150 },
+    { code = '3-01', offense = 'Disturbing the Peace',                 class = 'I', points = 0, fine = 200 },
+    { code = '3-02', offense = 'Public Intoxication',                  class = 'I', points = 0, fine = 150 },
+    { code = '3-05', offense = 'Trespassing',                          class = 'M', points = 0, fine = 400 },
+    { code = '3-08', offense = 'Vandalism',                            class = 'M', points = 0, fine = 500 },
+    { code = '4-01', offense = 'Failure to Appear',                    class = 'M', points = 0, fine = 500, aliases = { 'fta' } },
 }

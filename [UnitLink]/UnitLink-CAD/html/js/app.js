@@ -39,6 +39,8 @@
   const age = sec => { const m = Math.max(0, Math.floor((Date.now()/1000 - sec) / 60)); return m < 60 ? m + 'm' : Math.floor(m/60) + 'h' + (m%60) + 'm'; };
   const yrs = dob => Math.floor((Date.now() - new Date(dob)) / (365.25 * 864e5));
   const CLS = { F:'FELONY', M:'MISDEMEANOR', I:'INFRACTION' };
+  // fines are a record only: nothing is ever charged
+  const money = n => `${(S.cfg && S.cfg.fines && S.cfg.fines.symbol) || '$'}${Number(n || 0).toLocaleString('en-US')}`;
   let toastTimer;
   function toast(msg, err){ const t = $('#toast'); t.textContent = msg; t.className = 'toast on' + (err ? ' err' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = 'toast', 2600); }
   async function call(action, payload, okMsg){
@@ -292,7 +294,12 @@ ${R.warrants.length ? R.warrants.map(w => `<span class="r">${esc(w.number)} ${es
 <span class="hd">--- ALERTS ---</span>
 ${R.alerts.length ? R.alerts.map(a => `<span class="y">${esc(a.type)}: ${esc(a.title)}</span>`).join('\n') : 'NONE'}
 
-<span class="hd">--- HISTORY ---</span>
+${S.cfg.fines && S.cfg.fines.enabled ? `<span class="hd">--- FINES (RECORD ONLY, NOTHING IS CHARGED) ---</span>
+${(R.fines || []).length ? R.fines.map(f => f.outstanding
+  ? `<span class="y">${esc(f.number)}  ${money(f.amount)}  OUTSTANDING · EXPIRES ${d24(f.expires).slice(0,10)}</span>`
+  : `${esc(f.number)}  ${money(f.amount)}  EXPIRED ${d24(f.expires).slice(0,10)}`).join('\n') : 'NO FINES ON FILE'}
+
+` : ''}<span class="hd">--- HISTORY ---</span>
 CITATIONS ..... ${R.history.citation}
 ARRESTS ....... ${R.history.arrest}
 REPORTS ....... ${R.history.report}
@@ -334,7 +341,7 @@ ${R.records.length ? '\n' + R.records.slice(0, 10).map(r => `<span class="w">${e
       <div><label class="lbl">Linked Call</label><select class="fin" id="fCall">${callOpts}</select></div>`;
     if (t === 'citation') body += `<div><label class="lbl">Location</label><input class="fin" id="fLoc" value="${loc}"></div><div><label class="lbl">Court Date</label><input class="fin" id="fCourt" type="date"></div>${charges}
       <div class="full"><label class="lbl">Notes</label><textarea class="fin" id="fNotes" maxlength="1000" placeholder="Speed by radar, subject cooperative..."></textarea></div>
-      <div class="full hint">No fines on this server. Points are added to the driver's license; ${S.cfg.suspendAt} points suspends it. Felonies must be an arrest report.</div>`;
+      <div class="full hint">${S.cfg.fines && S.cfg.fines.enabled ? `Fines are written on the record only: no money is taken, and they expire after ${S.cfg.fines.expireDays} days. ` : ''}Points are added to the driver's license; ${S.cfg.suspendAt} points suspends it. Felonies must be an arrest report.</div>`;
     if (t === 'arrest') body += `<div><label class="lbl">Arrest Location</label><input class="fin" id="fLoc" value="${loc}"></div><div><label class="lbl">Booking</label><select class="fin" id="fBooking">${S.cfg.bookings.map(b=>`<option>${esc(b)}</option>`).join('')}</select></div>${charges}
       <div class="full"><label class="lbl">Narrative</label><textarea class="fin" id="fNarr" maxlength="4000" style="min-height:140px" placeholder="On the above date and time, I, ${esc(S.me.short)} (${esc(S.me.callsign)})..."></textarea></div>`;
     if (t === 'report') body += `<div><label class="lbl">Incident Type</label><select class="fin" id="fType">${S.cfg.reportTypes.map(r=>`<option>${esc(r)}</option>`).join('')}</select></div><div><label class="lbl">Location</label><input class="fin" id="fLoc" value="${loc}"></div>
@@ -355,7 +362,9 @@ ${R.records.length ? '\n' + R.records.slice(0, 10).map(r => `<span class="w">${e
       $('#chargeBody').innerHTML = S.charges.map((l,i) => `<tr class="c-${l.class==='F'?'offdt':l.class==='M'?'enrt':'avail'}"><td>${esc(l.code)}</td><td>${esc(l.offense)}</td><td>${CLS[l.class]}</td><td>${l.points||'-'}</td><td><span class="lnk r" data-rm="${i}">Remove</span></td></tr>`).join('') || '<tr><td colspan="5" class="empty">No charges</td></tr>';
       $$('#chargeBody [data-rm]').forEach(x => x.onclick = () => { S.charges.splice(+x.dataset.rm, 1); draw(); });
       const pts = S.charges.reduce((a,l) => a + (l.points||0), 0), fel = S.charges.some(l => l.class === 'F');
-      $('#chargeHint').innerHTML = S.formTab === 'citation' && fel ? '<span style="color:var(--offdt)">Felony charges cannot go on a citation. Use an arrest report.</span>' : (S.formTab === 'citation' && pts ? `Adds ${pts} license point${pts===1?'':'s'}.` : '');
+      const fine = S.charges.reduce((a,l) => a + (l.fine||0), 0), fines = S.cfg.fines && S.cfg.fines.enabled;
+      const bits = [pts ? `Adds ${pts} license point${pts===1?'':'s'}.` : '', fines && fine ? `Fine ${money(fine)} on record (nothing is charged, expires in ${S.cfg.fines.expireDays} days).` : ''].filter(Boolean).join(' ');
+      $('#chargeHint').innerHTML = S.formTab === 'citation' && fel ? '<span style="color:var(--offdt)">Felony charges cannot go on a citation. Use an arrest report.</span>' : (S.formTab === 'citation' ? bits : '');
     };
     const match = (l, s) => !s || l.code.includes(s) || l.offense.toLowerCase().includes(s) || (l.aliases || []).some(a => a.includes(s));
     q.oninput = q.onfocus = () => {
@@ -395,7 +404,8 @@ ${R.records.length ? '\n' + R.records.slice(0, 10).map(r => `<span class="w">${e
     modal(`${r.number} · ${r.type.toUpperCase()} · ${r.status.toUpperCase()}`,
       row('Subject', r.subject_name) + row('Officer', r.officer_label) + row('Filed', d24(r.at)) + row('Linked Call', r.call_id) +
       row('Charges', (d.charges || []).map(c => `§${c.code} ${c.offense} (${CLS[c.class]})`).join('\n')) +
-      row('Location', d.location) + row('Court Date', d.court) + row('Booking', d.booking) + row('Type', d.incidentType || d.warrantType) +
+      row('Location', d.location) + row('Court Date', d.court) +
+      row('Fine', d.fine ? `${money(d.fine)} · ${d.fineExpires * 1000 > Date.now() ? 'outstanding, expires' : 'expired'} ${d24(d.fineExpires).slice(0,10)} (record only, nothing is charged)` : '') + row('Booking', d.booking) + row('Type', d.incidentType || d.warrantType) +
       row('Involved', d.involved) + row(r.type === 'warrant' ? 'Probable Cause' : 'Narrative', d.narrative) + row('Notes', d.notes) + row('Reviewed By', r.reviewed_by),
       [{ label:'Close', cls:'gray' }]);
   }
@@ -438,7 +448,7 @@ ${R.records.length ? '\n' + R.records.slice(0, 10).map(r => `<span class="w">${e
   function renderLaws(){
     const s = $('#lawSearch').value.trim().toLowerCase();
     $('#lawBody').innerHTML = S.cfg.laws.filter(l => !s || l.code.includes(s) || l.offense.toLowerCase().includes(s) || (l.aliases||[]).some(a => a.includes(s)))
-      .map(l => `<tr class="c-${l.class==='F'?'offdt':l.class==='M'?'enrt':'avail'}"><td>§${esc(l.code)}</td><td>${esc(l.offense)}</td><td>${CLS[l.class]}</td><td>${l.points||'-'}</td><td class="wrap">${esc(l.note || '')}${(l.aliases||[]).length ? `<span class="hint"> (${esc(l.aliases.join(', '))})</span>` : ''}</td></tr>`).join('');
+      .map(l => `<tr class="c-${l.class==='F'?'offdt':l.class==='M'?'enrt':'avail'}"><td>§${esc(l.code)}</td><td>${esc(l.offense)}</td><td>${CLS[l.class]}</td><td>${l.points||'-'}</td>${S.cfg.fines && S.cfg.fines.enabled ? `<td>${l.fine ? money(l.fine) : '-'}</td>` : ''}<td class="wrap">${esc(l.note || '')}${(l.aliases||[]).length ? `<span class="hint"> (${esc(l.aliases.join(', '))})</span>` : ''}</td></tr>`).join('');
   }
   $('#lawSearch').oninput = renderLaws;
 
@@ -446,6 +456,7 @@ ${R.records.length ? '\n' + R.records.slice(0, 10).map(r => `<span class="w">${e
   UL.on('open', m => {
     const d = m.data;
     S.cfg = d; S.me = d.me;
+    $('#lawFineHead').style.display = d.fines && d.fines.enabled ? '' : 'none';
     $('#brand').textContent = d.name.toUpperCase();
     $('#sbUnit').textContent = `${d.me.callsign} · ${d.me.short} · ${d.me.dept}${d.me.supervisor ? ' · SUPERVISOR' : ''}`;
     $('#tablet').classList.add('on');

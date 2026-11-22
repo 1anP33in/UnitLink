@@ -10,10 +10,11 @@ UnitLink is an in-game CAD / MDT tablet for FiveM roleplay servers, together wit
 |---|---|---|
 | **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablet (`/cad` or F5) |
 | **UnitLink-Police** | `[UnitLink]/UnitLink-Police` | Calls, units, statuses, attaching and closing calls (CAD exports). 911 calls show up in UnitLink live, and changes made in the CAD show up on the 911 cards |
-| **UnitLink-Core** | `[UnitLink]/UnitLink-Core` | People (name, date of birth, gender, nationality, height) through `SearchCharacters` / `GetCharacterById`. Licenses and driver points come from character metadata, key `licenses` |
+| **UnitLink-Core** *(optional)* | `[UnitLink]/UnitLink-Core` | Character framework. Only needed if you want UnitLink-Core characters; without it, UnitLink is fully standalone |
 | **UnitLink-UI** | `[UnitLink]/UnitLink-UI` | Notifications |
+| **UnitLink-HUD** | `[UnitLink]/UnitLink-HUD` | Standalone HUD with **no money**. The job line changes when you go on duty |
 
-Notes, call history, records, warrants, BOLOs and state returns are kept in UnitLink's own `ul_*` MySQL tables, through **oxmysql**. oxmysql isn't in this repo; get it from its official release.
+**Standalone by default:** no framework and no money. People are **civilian profiles** that players make with `/civ`, and permissions are **FiveM ACE only**, on the account and never on characters (see [`aceperms.md`](aceperms.md)). Notes, call history, records, warrants, BOLOs, returns and civilian profiles are kept in UnitLink's own `ul_*` MySQL tables, through **oxmysql**. oxmysql isn't in this repo; get it from its official release.
 
 Each resource has its own README with the full details. The full documentation, ready to import into GitBook, is in [`docs/`](docs).
 
@@ -59,22 +60,24 @@ On GitHub, click **Code → Download ZIP**, extract it, and copy the `[UnitLink]
 
 ```cfg
 ensure oxmysql
-ensure UnitLink-Core
 ensure UnitLink-UI
 ensure UnitLink-Police
 ensure UnitLink-CAD
+ensure UnitLink-HUD
+# ensure UnitLink-Core   (optional, after oxmysql, only if you want its characters)
 ```
 
 3. Secrets go **only in `server.cfg`**, never in these files:
 
 ```cfg
-set mysql_connection_string "mysql://user:password@localhost/ulcore?charset=utf8mb4"
+set mysql_connection_string "mysql://user:password@localhost/unitlink?charset=utf8mb4"
 set unitlink_discord_token "YOUR_BOT_TOKEN"                                   # UnitLink-Core Discord role sync
 set unitlink_core_log_webhook "https://discord.com/api/webhooks/..."          # UnitLink-Core audit log (optional)
 ```
 
 4. Optional: UnitLink-Police's webhook URLs go in `UnitLink-Police/config/webhooks.lua`. They're blank in this repo, so keep real ones out of commits.
 5. Start the server. The database tables are created automatically.
+6. Give officers access with ACE permissions: copy the groups from [`aceperms.md`](aceperms.md) into `server.cfg` and add each officer's license. Civilians make their profile in game with `/civ`.
 
 ## UnitLink at a glance
 
@@ -90,7 +93,7 @@ set unitlink_core_log_webhook "https://discord.com/api/webhooks/..."          # 
   - **History:** the last 100 closed calls.
   - **Signal 100 and Panic.**
 - **Rules the server enforces:**
-  - Citations carry **points and no fines**, and a license is **suspended at 12 points**.
+  - Citations carry **points**, and a license is **suspended at 12 points**. Fines are **written on the record only**: no money is ever taken, and they expire after 7 days.
   - Felonies must be filed as an arrest report.
   - **Warrants need a supervisor's approval.**
   - Narratives need at least 20 characters.

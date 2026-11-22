@@ -52,7 +52,7 @@ UnitLink is an in-game **CAD / MDT tablet** for FiveM roleplay servers. It works
 <tr><td><strong>Installation</strong></td><td>Folders, start order, first boot</td><td><a href="getting-started/installation.md">installation.md</a></td></tr>
 <tr><td><strong>Using UnitLink</strong></td><td>Every screen explained</td><td><a href="unitlink/overview.md">overview.md</a></td></tr>
 <tr><td><strong>Rules</strong></td><td>Points, warrants, permissions</td><td><a href="rules/citations-and-points.md">citations-and-points.md</a></td></tr>
-<tr><td><strong>Configuration</strong></td><td>Every setting in config.lua</td><td><a href="configuration/ulcore-config.md">unitlink-config.md</a></td></tr>
+<tr><td><strong>Configuration</strong></td><td>Every setting in config.lua</td><td><a href="configuration/unitlink-config.md">unitlink-config.md</a></td></tr>
 <tr><td><strong>Roadmap</strong></td><td>SAFR, DOT, Civilian portal, Admin</td><td><a href="roadmap/overview.md">overview.md</a></td></tr>
 </tbody></table>
 
@@ -64,6 +64,7 @@ UnitLink is an in-game **CAD / MDT tablet** for FiveM roleplay servers. It works
 | **UnitLink-Police** | `[UnitLink]/UnitLink-Police` | Duty, units, 911 calls and the CAD exports |
 | **UnitLink-Core** | `[UnitLink]/UnitLink-Core` | Characters, groups and departments, licenses (metadata) |
 | **UnitLink-UI** | `[UnitLink]/UnitLink-UI` | Notifications and menus |
+| **UnitLink-HUD** | `[UnitLink]/UnitLink-HUD` | Standalone HUD, no money. The job line changes when you go on duty |
 
 {% hint style="info" %}
 **Status:** built and checked offline: the Lua compiles, the NUI was clicked through in a browser, and UnitLink-Core's 262 tests pass. It hasn't been run on a live FXServer yet. Use the [Live Server Checklist](testing/live-server-checklist.md).

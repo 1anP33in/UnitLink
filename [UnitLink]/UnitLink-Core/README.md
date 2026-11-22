@@ -57,7 +57,7 @@ UnitLink Core doesn't use ox_lib itself.
 3. **server.cfg:**
 
 ```cfg
-set mysql_connection_string "mysql://user:password@localhost/ulcore?charset=utf8mb4"
+set mysql_connection_string "mysql://user:password@localhost/unitlink?charset=utf8mb4"
 
 ensure oxmysql
 ensure ox_lib

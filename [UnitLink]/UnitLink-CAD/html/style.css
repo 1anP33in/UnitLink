@@ -175,3 +175,10 @@ textarea.fin{resize:vertical;min-height:90px;font-weight:600;font-family:inherit
 .toast{position:absolute;left:50%;bottom:34px;transform:translateX(-50%) translateY(10px);background:#0f2f5c;border:1px solid #2d62b0;color:#fff;padding:8px 14px;border-radius:5px;font-weight:700;opacity:0;transition:.18s;pointer-events:none;z-index:50;max-width:70%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .toast.err{background:#5a1418;border-color:#a3262d}
+
+/* Civilian ID window (/civ): same look as the CAD, smaller frame */
+#civ{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.35)}
+#civ.on{display:grid;animation:tabIn .25s cubic-bezier(.2,.8,.2,1)}
+#civ .civwin{width:min(1180px,92vw);height:min(720px,86vh);min-width:0;border-radius:10px;border:1px solid #3a3d44;box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 0 0 2px #26282d;background:#000}
+.cscreen{position:absolute;inset:0;display:flex;padding:8px;gap:8px}
+#civ .ret{min-height:0}

@@ -133,13 +133,15 @@ UL.handle('open', nil, function(o)
     local statuses = {}
     for _, s in ipairs(Config.Statuses) do statuses[#statuses + 1] = { code = s.code, label = s.label } end
     local laws = {}
-    for _, l in ipairs(Config.Laws) do laws[#laws + 1] = { code = l.code, offense = l.offense, class = l.class, points = l.points or 0, note = l.note, aliases = l.aliases } end
+    for _, l in ipairs(Config.Laws) do laws[#laws + 1] = { code = l.code, offense = l.offense, class = l.class, points = l.points or 0, fine = l.fine or 0, note = l.note, aliases = l.aliases } end
     return true, {
         name = Config.Name,
         me = { callsign = o.callsign, short = o.short, name = o.name, dept = o.dept, charId = o.charId, supervisor = o.supervisor },
         statuses = statuses, natures = Config.Natures, laws = laws,
         reportTypes = Config.ReportTypes, bookings = Config.Bookings, warrantTypes = Config.WarrantTypes, alertTypes = Config.AlertTypes,
         suspendAt = Config.Licenses.suspendAt, warrantsNeedApproval = Config.WarrantsNeedApproval,
+        fines = { enabled = Config.Fines and Config.Fines.enabled == true, expireDays = Config.Fines and Config.Fines.expireDays or 0, symbol = Config.Fines and Config.Fines.symbol or '$' },
+        identity = Identity.mode(),
         board = UL.board(),
     }
 end)

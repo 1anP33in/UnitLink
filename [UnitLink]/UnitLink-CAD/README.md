@@ -9,20 +9,19 @@ UnitLink is an in-game CAD / MDT tablet for FiveM roleplay servers. It works lik
 | Data | Comes from |
 |---|---|
 | Calls, units, statuses, attaching, closing | **UnitLink-Police** (new CAD exports). 911 calls show up in UnitLink live, and CAD changes show up on the 911 cards. |
-| People: name, date of birth, gender, nationality, height | **UnitLink-Core** (`SearchCharacters`, `GetCharacterById`) |
-| Licenses and driver points | **UnitLink-Core** character metadata, key `licenses` |
+| People: name, date of birth, gender, nationality, height | **Civilian profiles** made with `/civ` (standalone), or **UnitLink-Core** characters if it's running (`Config.Identity = 'auto'`) |
+| Licenses and driver points | On the civilian profile, or UnitLink-Core metadata key `licenses` |
 | Notes, call history, records, warrants, BOLOs, returns | UnitLink's own `ul_*` MySQL tables |
 | Notifications | **UnitLink-UI** |
 
 ## Install
 
 1. Put `UnitLink-CAD` in your resources, e.g. `resources/[UnitLink]/UnitLink-CAD`.
-2. Update **UnitLink-Police** and **UnitLink-Core** with the versions from this project. UnitLink needs their new exports (see "Changes to other resources").
+2. Use the **UnitLink-Police** from this project. UnitLink needs its CAD exports (see "Changes to other resources"). UnitLink-Core is optional.
 3. In `server.cfg`, after everything it depends on:
 
 ```cfg
 ensure oxmysql
-ensure UnitLink-Core
 ensure UnitLink-UI
 ensure UnitLink-Police
 ensure UnitLink-CAD
@@ -42,6 +41,7 @@ ensure UnitLink-CAD
 | **CAD** | Active calls and units, color-coded by status (green available, yellow en route, pink on scene, orange busy, red unavailable, cyan other departments). Change your own status right in the grid or in the status bar. Double-click a call to open it. |
 | **Call record** | Nature, priority (editable), address, city, county, caller and units. Buttons for Assign Self / ENRT / ARRVD / Clear Self, GPS, and close. Tabs: **Notes** (live, timestamped, with system entries for attaches, status and edits), **Info**, **State Returns** run on the call, and **Address History** (closed calls within 60 m). |
 | **New Call** | Self-initiated call at your position. You're attached automatically and no popup goes to other units. |
+| **Civilian ID (`/civ`)** | Anyone. Create up to 5 civilian profiles and pick who you are playing. Officers find these in Search. |
 | **Search → State Return** | Name or character ID. The return shows licenses and points, active warrants (red WANTED banner), alerts, and history. Buttons go straight to Citation / Arrest / Report / Warrant / Add Alert. |
 | **Returns** | Every name you ran in the last 12 hours. |
 | **Forms** | Citation, Arrest Report, Incident Report, Warrant Request. Charges come from the code list (searchable by code, name or abbreviation like "dui"). Click any of your records to read it back. |
@@ -53,13 +53,13 @@ ensure UnitLink-CAD
 
 ## Rules enforced on the server
 
-- **Every request is checked again:** on duty, CAD access, character loaded, and a rate limit (`Config.RateLimitMs`).
+- **Every request is checked again:** on duty, CAD access, and a rate limit (`Config.RateLimitMs`). Department and supervisor access are **ACE permissions** (see `aceperms.md` at the repo root).
 - **Supervisors are checked by unitlink-police:** `unitlink.<dept>.supervisor` or `unitlink.police.supervisor`.
 - **Citations:**
   - They can't contain felonies.
   - Their points are added to the subject's driver license.
   - A license is suspended at `Config.Licenses.suspendAt` points (12).
-  - **No fines.**
+  - **Fines are on record only:** each charge has a fine, shown on the citation and the state return. **No money is taken**, and the fine expires after `Config.Fines.expireDays` (7).
 - **Warrants:** they need a probable cause of at least 20 characters. Officers' warrants wait for supervisor approval (`Config.WarrantsNeedApproval`). Supervisors' warrants go active right away.
 - **Arrest and incident reports:** need a narrative of at least 20 characters.
 - **Text from players:** cleaned and length-capped. All SQL is parameterized.
@@ -67,7 +67,7 @@ ensure UnitLink-CAD
 
 ## Licenses
 
-UnitLink reads `licenses` from UnitLink-Core character metadata:
+Licenses are stored on the civilian profile (standalone) or in UnitLink-Core character metadata, key `licenses`, with the same shape:
 
 ```lua
 licenses = {
@@ -77,7 +77,7 @@ licenses = {
 }
 ```
 
-Characters without that key use `Config.Licenses.defaults` (driver's license valid, others none). A future DMV or license script only has to write this key.
+People without licenses use `Config.Licenses.defaults` (driver's license valid, others none). A future DMV or license script only has to write this key.
 
 ## Changes to other resources
 
@@ -125,7 +125,7 @@ To render the PNGs again after editing an SVG, run `python logos/build_logos.py`
 6. A second officer adds a note, and it appears live on your open call.
 7. New Call (traffic stop). It's created at your location, you're attached, and other units get no popup.
 8. Close the call. It goes to History, the units go back to AVAIL, and it's read-only when reopened.
-9. Search a character by name and by ID. Run the return.
+9. Make a civilian profile with `/civ`. Search it by name and by ID, and run the return.
 10. A citation with a felony is refused. A citation for speeding adds points. At 12+ points the license shows SUSPENDED.
 11. A warrant from a non-supervisor is pending, and supervisors get a notification. A supervisor approves it, the subject shows WANTED, then "Mark Served".
 12. Add a BOLO. Every on-duty unit is notified. Remove it.
