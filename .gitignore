@@ -1,0 +1,23 @@
+# This repo tracks ONLY the scripts UnitLink needs. Everything else in
+# resources/ stays local. To add a resource, un-ignore its folder below.
+/*
+!/.gitignore
+!/README.md
+
+!/[[]Tropical_PoliceScripts]/
+/[[]Tropical_PoliceScripts]/*
+!/[[]Tropical_PoliceScripts]/unitlink/
+!/[[]Tropical_PoliceScripts]/tsrp-police/
+
+!/[[]Tropical_Permissions]/
+/[[]Tropical_Permissions]/*
+!/[[]Tropical_Permissions]/tsrp-core/
+
+!/[[]Tropical_Menus]/
+/[[]Tropical_Menus]/*
+!/[[]Tropical_Menus]/tsrp-ui/
+
+__pycache__/
+*.pyc
+node_modules/
+Thumbs.db
