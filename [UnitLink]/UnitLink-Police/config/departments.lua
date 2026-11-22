@@ -36,6 +36,10 @@ Config.Departments = {
         order = 5, short = 'SAFR', name = 'San Andreas Fire & Rescue', type = 'fire', blipColor = 1,
         callsign = { pattern = '^%u+%-%d+$', example = 'E-12', minLength = 3, maxLength = 8 },
     },
+    dot = {
+        order = 7, short = 'DOT', name = 'Department of Transportation', type = 'dot', blipColor = 47,
+        callsign = { pattern = '^%u+%-%d+$', example = 'HM-2', minLength = 3, maxLength = 8 },
+    },
     faa = {
         order = 6, short = 'FAA', name = 'Federal Aviation Administration', type = 'aviation', blipColor = 2,
         callsign = { pattern = '^%u+%-%d+$', example = 'FAA-1', minLength = 3, maxLength = 8 },
@@ -51,9 +55,11 @@ Config.Departments = {
 --   canPanic     : can use /panic
 --   receivesPanic: gets panic alerts
 --   fireCad      : opens the SAFR Fire & Rescue tablet (UnitLink-CAD) with /cad
+--   dotCad       : opens the DOT Work Orders tablet (UnitLink-CAD) with /cad
 ---------------------------------------------------------------------
 Config.DepartmentTypes = {
     leo      = { roster = true,  showOnBlips = true,  seeBlips = true,  receives911 = true,  canPanic = true,  receivesPanic = true },
     fire     = { roster = false, showOnBlips = false, seeBlips = false, receives911 = false, canPanic = false, receivesPanic = false, fireCad = true },
+    dot      = { roster = false, showOnBlips = false, seeBlips = false, receives911 = false, canPanic = false, receivesPanic = false, dotCad = true },
     aviation = { roster = false, showOnBlips = false, seeBlips = false, receives911 = false, canPanic = false, receivesPanic = false },
 }

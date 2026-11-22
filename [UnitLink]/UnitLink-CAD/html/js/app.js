@@ -4,6 +4,7 @@
 
   /* ============================ icons ============================ */
   const I = {
+    tools:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M8 11h6M11 8v6"/>',
     back:'<path d="M19 12H5M11 6l-6 6 6 6"/>', fwd:'<path d="M5 12h14M13 6l6 6-6 6"/>',
     cad:'<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
     search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
@@ -59,7 +60,7 @@
     ['back','Back','#ffb547','back'],['fwd','Previous','#ffb547','fwd'],['|'],
     ['cad','CAD','#fff','cad'],['search','Search','#ffd257','search'],['returns','Returns','#ffd257','returns'],['forms','Forms','#fff','forms'],['|'],
     ['mycall','My Call','#cbd5e1','star'],['newcall','New Call','#3ee06a','phone'],['assign','Assign Self','#3ee06a','phone'],['alerts','Alerts','#ff6b6b','alert'],['laws','Laws','#ffd257','laws'],['history','History','#9cc3ff','history'],['|'],
-    ['signal','Signal 100','#ffd257','signal'],['panic','Panic','#ff6b6b','bell'],
+    ['tools','Tools','#ffd257','tools'],['|'],['signal','Signal 100','#ffd257','signal'],['panic','Panic','#ff6b6b','bell'],
   ];
   function tileOff(t){
     if (t === 'mycall') return !myCalls().length;
@@ -71,7 +72,7 @@
   }
   function renderToolbar(){
     $('#toolbar').innerHTML = TILES.map(t => t[0] === '|' ? '<div class="gap"></div>' :
-      `<div class="tile ${t[0]==='panic'?'panic':''} ${t[0]==='signal'?'sig'+(S.signal100?' active':''):''} ${tileOff(t[0])?'off':''} ${t[0]===S.screen||(S.screen==='call'&&t[0]==='mycall'&&myCalls().includes(S.selectedCall))?'on':''}" data-t="${t[0]}">${svg(t[3], t[2])}${t[1]}</div>`).join('') +
+      `<div class="tile ${t[0]==='panic'?'panic':''} ${t[0]==='signal'?'sig'+(S.signal100?' active':''):''} ${tileOff(t[0])?'off':''} ${t[0]===S.screen||(S.screen==='call'&&t[0]==='mycall'&&myCalls().includes(S.selectedCall))?'on':''}" data-t="${t[0]}">${svg(t[3], t[2])}${t[1]}${t[0]==='tools'&&window.ULTools&&ULTools.unread()?`<i class="badge">${ULTools.unread()}</i>`:''}</div>`).join('') +
       `<div class="seal"><div>${esc(S.cfg.name.toUpperCase())}</div></div>`;
     $$('#toolbar .tile').forEach(el => el.onclick = () => !el.classList.contains('off') && action(el.dataset.t));
     const Q = [['mycall','My Call','star','#cbd5e1'],['search','Search','search','#ffd257'],['laws','Laws','laws','#ffd257'],['history','Call History','history','#9cc3ff'],['alerts','Alerts','alert','#ff6b6b'],['newcall','New Call','phone','#3ee06a'],['assign','Assign Self','phone','#3ee06a'],['returns','Returns','returns','#ffd257']];
@@ -98,6 +99,7 @@
     if (t === 'fwd'){ if (S.histPos < S.hist.length - 1){ S.histPos++; show(S.hist[S.histPos], false); } return; }
     if (t === 'mycall'){ if (myCalls().length) openCall(myCalls()[0]); return; }
     if (t === 'newcall') return newCallModal();
+    if (t === 'tools') return window.ULTools && ULTools.open();
     if (t === 'assign'){ if (await call('assign', { id:S.selectedCall }, `Attached to call ${S.selectedCall}`)) refreshBoard(); return; }
     if (t === 'signal') return call('signal100', { on: !S.signal100 });
     if (t === 'panic'){ await call('panic', {}); toast('PANIC sent with your location', true); return; }
@@ -463,8 +465,9 @@ ${R.records.length ? '\n' + R.records.slice(0, 10).map(r => `<span class="w">${e
     applyBoard(d.board);
     S.hist = ['cad']; S.histPos = 0;
     show('cad', false);
+    if (window.ULTools) ULTools.attach('leo', d.me, renderToolbar);
   });
-  UL.on('close', () => { $('#tablet').classList.remove('on'); closeModal(); });
+  UL.on('close', () => { $('#tablet').classList.remove('on'); closeModal(); if (window.ULTools) ULTools.close(); });
   UL.on('push', m => {
     if (!S.cfg) return;
     if (m.kind === 'board') applyBoard(m.data);
@@ -485,6 +488,7 @@ ${R.records.length ? '\n' + R.records.slice(0, 10).map(r => `<span class="w">${e
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape' || !$('#tablet').classList.contains('on')) return;
     if (modalOpen()) return closeModal();
+    if (window.ULTools && ULTools.isOpen()) return ULTools.close();
     close();
   });
   setInterval(() => { const d = new Date(); $('#clock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }, 1000);

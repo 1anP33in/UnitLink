@@ -3,7 +3,7 @@
 UnitLink uses **FiveM ACE permissions only**. They belong to the player's **account** (license), never to a character, and are set in `server.cfg`.
 
 {% hint style="success" %}
-Ready-to-paste groups and every permission are on the [ACE Permissions](../getting-started/ace-permissions.md) page.
+Examples, and how to add more, are on the [ACE Permissions](../getting-started/ace-permissions.md) page.
 {% endhint %}
 
 ## Going on duty
@@ -15,9 +15,12 @@ Ready-to-paste groups and every permission are on the [ACE Permissions](../getti
 | LSP | `unitlink.lsp.duty` | `unitlink.lsp.supervisor` |
 | DHS | `unitlink.dhs.duty` | `unitlink.dhs.supervisor` |
 | SAFR | `unitlink.safr.duty` | `unitlink.safr.supervisor` |
+| DOT | `unitlink.dot.duty` | `unitlink.dot.supervisor` |
 | FAA | `unitlink.faa.duty` | `unitlink.faa.supervisor` |
 
 `unitlink.police.supervisor` makes someone a supervisor across every LEO department.
+
+`unitlink.admin` opens the [Admin Dashboard](../admin/admin-dashboard.md) (`/cadadmin`).
 
 ```cfg
 add_ace group.sasp unitlink.sasp.duty allow
@@ -26,7 +29,7 @@ add_principal identifier.license:abc123 group.sasp
 
 ## Opening the CAD
 
-You need to be **on duty** in a department whose type receives 911 (`Config.AccessFlag`, LEO by default). There's no separate CAD permission: being on duty is the gate.
+You need to be **on duty**. Police get the police CAD, SAFR gets the SAFR CAD and DOT gets the DOT tablet. There's no separate CAD permission: being on duty is the gate. The Civilian Portal (`/civ`) needs nothing.
 
 ## Server-side checks
 

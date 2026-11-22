@@ -31,6 +31,42 @@ Config.Civ = {
     maxProfiles = 5,
     minAge = 16, maxAge = 100,
     nationalities = { 'American', 'Canadian', 'Mexican', 'British', 'Irish', 'German', 'French', 'Italian', 'Spanish', 'Brazilian', 'Colombian', 'Jamaican', 'Nigerian', 'Indian', 'Chinese', 'Japanese', 'Korean', 'Filipino', 'Russian', 'Australian', 'Other' },
+
+    -- Civilian Portal (/civ): 911, records, vehicles, applications, service requests
+    maxVehicles = 6,
+    maxBusinesses = 3,
+    callCooldown = 60,              -- seconds between portal 911 / service requests per player
+    -- What needs an admin to approve it in the Admin Dashboard (false = instant)
+    approval = { drivers = true, firearm = true, pilot = true, vehicle = false, business = true },
+    vehicleColors = { 'BLACK', 'WHITE', 'SILVER', 'GREY', 'RED', 'BLUE', 'GREEN', 'YELLOW', 'ORANGE', 'BROWN', 'PURPLE', 'GOLD' },
+    businessTypes = { 'RETAIL', 'RESTAURANT', 'AUTOMOTIVE', 'SECURITY', 'TRANSPORT', 'ENTERTAINMENT', 'CONSTRUCTION', 'OTHER' },
+    -- DOT service requests civilians can send (each becomes a DOT work order)
+    serviceRequests = {
+        { label = 'Pothole / road damage',   category = 'ROAD MAINTENANCE' },
+        { label = 'Broken traffic signal',   category = 'TRAFFIC MANAGEMENT' },
+        { label = 'Debris on the road',      category = 'DEBRIS REMOVAL' },
+        { label = 'Abandoned vehicle',       category = 'VEHICLE RECOVERY' },
+        { label = 'Roadside assistance',     category = 'ROADSIDE ASSISTANCE' },
+    },
+}
+
+---------------------------------------------------------------------
+-- Shared tools (every department tablet has a Tools tile):
+-- global search, messages, shared BOLOs, incident links, activity, profiles
+---------------------------------------------------------------------
+Config.Tools = {
+    enabled = true,
+    boloTypes = { 'PERSON', 'VEHICLE', 'PROPERTY', 'HAZARD', 'OTHER' },
+    messageDays = 3,                -- inbox shows messages from the last N days
+}
+
+---------------------------------------------------------------------
+-- Admin Dashboard (/cadadmin). Who can open it is ACE only:
+--   add_ace group.admin unitlink.admin allow
+---------------------------------------------------------------------
+Config.Admin = {
+    command = 'cadadmin',
+    ace = 'unitlink.admin',
 }
 
 ---------------------------------------------------------------------
@@ -135,6 +171,78 @@ Config.Statuses = {
     { code = 'ARRVD', status = 'onscene',     label = 'On Scene' },  -- only while on a call
     { code = 'BUSY',  status = 'busy',        label = 'Busy' },
     { code = 'UNAV',  status = 'unavailable', label = 'Unavailable' },
+}
+
+---------------------------------------------------------------------
+-- DOT: Work Orders
+-- On-duty units whose UnitLink-Police department type has `accessFlag`
+-- get the DOT tablet with /cad (F5). Supervisors: ACE unitlink.dot.supervisor.
+---------------------------------------------------------------------
+Config.Dot = {
+    enabled = true,
+    accessFlag = 'dotCad',
+    firstOrder = 5001,              -- work order numbers start here (shown as WO-5001)
+    statuses = {
+        { code = 'AVAIL', label = 'Available',   color = 'avail' },
+        { code = 'ENRT',  label = 'En Route',    color = 'enrt', onCall = true },
+        { code = 'ONSCN', label = 'On Scene',    color = 'arrvd', onCall = true },
+        { code = 'WORK',  label = 'Working',     color = 'trans', onCall = true },
+        { code = 'BUSY',  label = 'Busy',        color = 'busy' },
+        { code = 'UNAV',  label = 'Unavailable', color = 'offdt' },
+    },
+    categories = { 'ROAD MAINTENANCE', 'ROADSIDE ASSISTANCE', 'VEHICLE RECOVERY', 'ROAD CLOSURES', 'TRAFFIC MANAGEMENT',
+        'ROAD INSPECTIONS', 'CONSTRUCTION ZONES', 'DEBRIS REMOVAL', 'DAMAGED ROAD SIGNS', 'HIGHWAY HAZARDS' },
+    -- board filter chips: label -> categories
+    filters = {
+        { label = 'Roadside', categories = { 'ROADSIDE ASSISTANCE' } },
+        { label = 'Traffic control', categories = { 'TRAFFIC MANAGEMENT' } },
+        { label = 'Recovery', categories = { 'VEHICLE RECOVERY' } },
+        { label = 'Maintenance', categories = { 'ROAD MAINTENANCE', 'DEBRIS REMOVAL', 'DAMAGED ROAD SIGNS', 'HIGHWAY HAZARDS', 'ROAD INSPECTIONS' } },
+        { label = 'Construction', categories = { 'CONSTRUCTION ZONES', 'ROAD CLOSURES' } },
+    },
+    orderStatuses = { 'OPEN', 'ASSIGNED', 'IN PROGRESS', 'ON HOLD' },
+    dispositions = { 'COMPLETE', 'COMPLETE · ROADWAY CLEAR', 'REFERRED TO CONTRACTOR', 'DUPLICATE', 'CANCELLED BY REQUESTER' },
+    -- vehicles employees can be assigned to
+    fleet = {
+        { id = 'FLATBED TOW 1', type = 'TOW TRUCK' }, { id = 'WRECKER 3', type = 'TOW TRUCK' },
+        { id = 'SERVICE TRUCK 4', type = 'SERVICE TRUCK' }, { id = 'ARROW BOARD TRUCK 2', type = 'SERVICE TRUCK' },
+        { id = 'ROADSIDE VAN 1', type = 'SERVICE TRUCK' }, { id = 'DUMP TRUCK 6', type = 'ROAD MAINTENANCE' },
+        { id = 'PAVER 1', type = 'ROAD MAINTENANCE' },
+    },
+    -- equipment inventory (total quantity on hand)
+    equipment = {
+        { id = 'cones', item = 'Traffic cones', qty = 200 }, { id = 'arrow', item = 'Arrow board (trailer)', qty = 4 },
+        { id = 'closed', item = 'Road closed sign', qty = 20 }, { id = 'absorb', item = 'Absorbent (bag)', qty = 30 },
+        { id = 'light', item = 'Portable light tower', qty = 3 }, { id = 'stop', item = 'Stop sign (R1-1)', qty = 12 },
+    },
+    closureReasons = { 'CONSTRUCTION', 'COLLISION', 'EVENT', 'HAZARD', 'EMERGENCY' },
+    directions = { 'BOTH', 'NORTHBOUND', 'SOUTHBOUND', 'EASTBOUND', 'WESTBOUND' },
+    certifications = { 'CDL-A', 'CDL-B', 'Flagger', 'Work Zone Safety', 'Heavy Recovery', 'Signal Tech' },
+    nearbyMeters = 60,
+    minNarrative = 20,              -- reports and completion notes
+    requestCooldown = 120,          -- seconds between civilian service requests per player
+    forms = {
+        { key = 'hazard', label = 'Road Hazard Report', fields = {
+            { 'location', 'Location', 'text', true }, { 'htype', 'Hazard Type', { 'POTHOLE', 'DEBRIS', 'FLOODING', 'ROCKSLIDE', 'SIGNAL OUT', 'SPILL', 'OTHER' } },
+            { 'lanes', 'Lanes Affected', 'text' }, { 'severity', 'Severity', { 'LOW', 'MODERATE', 'HIGH - MAJOR HIGHWAY HAZARD' } }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'recovery', label = 'Vehicle Recovery Report', fields = {
+            { 'incident', 'Work Order', 'incident' }, { 'plate', 'Plate', 'text' }, { 'vehicle', 'Vehicle', 'text' },
+            { 'reason', 'Reason', { 'COLLISION', 'DISABLED', 'ABANDONED', 'POLICE REQUEST', 'ILLEGALLY PARKED' } },
+            { 'towto', 'Towed To', { 'STATE IMPOUND', 'DOT YARD', "OWNER'S ADDRESS", 'REPAIR SHOP' } }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'closure', label = 'Road Closure Request', fields = {
+            { 'road', 'Road / Segment', 'text', true }, { 'direction', 'Direction', 'directions' }, { 'lanes', 'Lanes', 'text' },
+            { 'until', 'Until', 'text' }, { 'reason', 'Reason', 'closureReasons', true }, { 'detour', 'Detour', 'text' }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'inspection', label = 'Road Inspection Report', fields = {
+            { 'road', 'Road / Segment', 'text', true }, { 'rating', 'Condition Rating', { '5 - EXCELLENT', '4 - GOOD', '3 - FAIR', '2 - POOR', '1 - FAILED' } },
+            { 'defects', 'Defects Found', 'text' }, { 'action', 'Recommended Action', { 'NONE', 'MONITOR', 'PATCH', 'RESURFACE', 'CLOSE ROAD' } }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'maintdone', label = 'Maintenance Completion Report', fields = {
+            { 'incident', 'Work Order', 'incident' }, { 'work', 'Work Performed', 'text' }, { 'materials', 'Materials Used', 'text' },
+            { 'hours', 'Labor Hours', 'number' }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'damage', label = 'Equipment Damage Report', fields = {
+            { 'asset', 'Vehicle / Equipment', 'assets', true }, { 'desc', 'Damage Description', 'text' },
+            { 'cause', 'Cause', { 'WEAR', 'COLLISION', 'OPERATOR ERROR', 'VANDALISM', 'UNKNOWN' } },
+            { 'serviceable', 'Still Serviceable', { 'YES', 'NO - TAKE OUT OF SERVICE' } }, { 'narrative', 'Narrative', 'narr' } } },
+    },
 }
 
 ---------------------------------------------------------------------

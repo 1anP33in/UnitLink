@@ -1,19 +1,9 @@
 # What's Coming
 
-UnitLink is growing from a police CAD into one system for **every department**. The screens below are designed and working as **browser preview mockups only**. None of them are in the Lua yet.
+Everything from the preview mockups is now built: the police CAD, the [SAFR CAD](../safr/overview.md), [DOT Work Orders](../dot/overview.md), the [Civilian Portal](../unitlink/civilian-portal.md), the [Admin Dashboard](../admin/admin-dashboard.md) and the [Shared Tools](../unitlink/shared-tools.md).
 
-{% hint style="info" %}
-Every new screen uses the **same look as the Police CAD**: blue toolbar of tile buttons, gray panels, data tables and blue status bar. Staff move between departments with a switch in the menu bar.
-{% endhint %}
-
-| Module | One line |
-|---|---|
-| **SAFR: Fire & Rescue CAD** | **Built.** See [SAFR Overview](../safr/overview.md) |
-| [DOT: Work Orders](dot.md) | Jobs and roadside requests, fleet and equipment, road closures |
-| [Civilian Portal](civilian-portal.md) | Public tablet: 911 with live tracking, records, applications |
-| [Admin Dashboard](admin-dashboard.md) | Departments, ranks, permissions, employees, system settings |
-| [Shared Tools](shared-tools.md) | Global search, messaging, BOLOs, incident linking, activity logs |
-
-## New departments
+## Ideas for later
 
 * **San Andreas Department of Justice (SADOJ):** District Attorney's Office and Superior Court, with its own seal.
+* **Ranks:** named ranks inside a department. Permissions stay ACE.
+* **License renewals and expiry dates.**

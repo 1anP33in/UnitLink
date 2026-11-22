@@ -49,7 +49,7 @@
 
 ## Where licenses are stored
 
-On the person's **civilian profile** (standalone, see [Civilian ID](../unitlink/civilian-id.md)), or in UnitLink-Core character metadata under the key `licenses` if you run UnitLink-Core. Same shape either way:
+On the person's **civilian profile** (standalone, see [Civilian Portal](../unitlink/civilian-portal.md)), or in UnitLink-Core character metadata under the key `licenses` if you run UnitLink-Core. Same shape either way:
 
 ```lua
 licenses = {

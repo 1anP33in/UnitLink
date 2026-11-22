@@ -17,5 +17,13 @@ UnitLink has been checked offline but **not on a live FXServer yet**. Go through
 - [ ] 13. Signal 100 from a supervisor shows on every tablet. A non-supervisor can't set it.
 - [ ] 14. Going off duty with the tablet open closes it.
 - [ ] 15. `restart UnitLink-CAD` with the tablet open gives control back and removes the prop.
+- [ ] 16. DOT on duty: `/cad` opens DOT Work Orders. New Job, WORK status sets it IN PROGRESS, Complete needs 20+ characters of notes.
+- [ ] 17. A DOT non-supervisor files a Road Closure Request: REQUESTED. A supervisor approves it and every unit is notified.
+- [ ] 18. Tools → Messages to SAFR reach only SAFR. Tools → BOLOs show in every department.
+- [ ] 19. `/civ` → 911 → Police: the call is on the police board and the portal shows its number. Fire / Ambulance go to SAFR.
+- [ ] 20. `/civ` → Service Requests: a WO number comes back and the job is on the DOT board.
+- [ ] 21. `/civ` → apply for a firearm license, `/cadadmin` → Applications → Approve, and the portal shows it VALID.
+- [ ] 22. `/cadadmin` → Laws & Fines: change a fine, reopen the police CAD and see it. After `restart UnitLink-CAD` it's still changed.
+- [ ] 23. `/cadadmin` without `unitlink.admin` is refused.
 
 If something fails, note the item number and any console errors (F8, and the server console).

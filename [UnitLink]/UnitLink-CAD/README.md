@@ -33,7 +33,7 @@ ensure UnitLink-CAD
 
 - **Open:** `/cad` or **F5** (rebindable under Settings → Key Bindings → FiveM).
 - **Close:** **Esc** or **✕ Close**.
-- **Who can open it:** only on-duty units whose department type receives 911 (LEO by default, via `Config.AccessFlag`).
+- **Who can open it:** on-duty units. LEO get the police CAD, SAFR gets the SAFR CAD and DOT gets the DOT Work Orders tablet. `/civ` (Civilian Portal) is for everyone; `/cadadmin` (Admin Dashboard) needs the ACE `unitlink.admin`.
 - **While it's open:** you hold a tablet, and going off duty closes it.
 
 | Screen | What it does |
@@ -41,7 +41,8 @@ ensure UnitLink-CAD
 | **CAD** | Active calls and units, color-coded by status (green available, yellow en route, pink on scene, orange busy, red unavailable, cyan other departments). Change your own status right in the grid or in the status bar. Double-click a call to open it. |
 | **Call record** | Nature, priority (editable), address, city, county, caller and units. Buttons for Assign Self / ENRT / ARRVD / Clear Self, GPS, and close. Tabs: **Notes** (live, timestamped, with system entries for attaches, status and edits), **Info**, **State Returns** run on the call, and **Address History** (closed calls within 60 m). |
 | **New Call** | Self-initiated call at your position. You're attached automatically and no popup goes to other units. |
-| **Civilian ID (`/civ`)** | Anyone. Create up to 5 civilian profiles and pick who you are playing. Officers find these in Search. |
+| **Civilian Portal (`/civ`)** | Anyone. Profiles (up to 5), dashboard, 911 with call tracking, records and fines, vehicles, applications, DOT service requests. |
+| **Tools** | On every department tablet: global search, messages, shared BOLOs, incident links, activity, employee profiles. |
 | **Search → State Return** | Name or character ID. The return shows licenses and points, active warrants (red WANTED banner), alerts, and history. Buttons go straight to Citation / Arrest / Report / Warrant / Add Alert. |
 | **Returns** | Every name you ran in the last 12 hours. |
 | **Forms** | Citation, Arrest Report, Incident Report, Warrant Request. Charges come from the code list (searchable by code, name or abbreviation like "dui"). Click any of your records to read it back. |
@@ -132,3 +133,11 @@ To render the PNGs again after editing an SVG, run `python logos/build_logos.py`
 13. Signal 100 from a supervisor shows on every tablet. A non-supervisor can't set it.
 14. Go off duty with the tablet open. It closes.
 15. `restart UnitLink-CAD` with the tablet open. Control comes back and the prop is removed.
+16. DOT on duty: `/cad` opens DOT Work Orders. New Job, WORK status sets the job IN PROGRESS, Complete needs 20+ characters of notes.
+17. A DOT non-supervisor files a Road Closure Request: it shows REQUESTED. A DOT supervisor approves it and every unit is notified.
+18. Tools → Messages: send to SAFR. Only SAFR units get it. Tools → BOLOs: post one, every department sees it.
+19. `/civ` → 911 → Police: the call appears on the police board and the portal shows its call number. Fire / Ambulance go to SAFR.
+20. `/civ` → Service Requests: a WO number comes back and the job is on the DOT board.
+21. `/civ` → Applications → Firearm License. `/cadadmin` (with `unitlink.admin`) → Applications → Approve. The portal shows the license VALID.
+22. `/cadadmin` → Laws & Fines: change a fine. The police CAD Laws screen shows it after reopening. `restart UnitLink-CAD`: it's still changed.
+23. `/cadadmin` without `unitlink.admin` is refused.

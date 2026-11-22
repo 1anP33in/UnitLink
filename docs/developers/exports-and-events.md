@@ -15,6 +15,7 @@ Actions return `ok, err`.
 | `GetUnits()` | On-duty units (`source, callsign, dept, status, calls…`) |
 | `SetUnitStatus(src, status)` | `available`, `responding`, `onscene`, `busy`, `unavailable` |
 | `IsSupervisor(src)` | `true` if the player has `unitlink.<dept>.supervisor` or `unitlink.police.supervisor` |
+| `GetDepartments()` | Read-only list of departments with their duty and supervisor ACE (used by the Admin Dashboard) |
 
 Older exports: `IsOnDuty(source)`, `GetOfficer(source)`, `GetOnDutyOfficers()`, `ClockOut(source, reason)`.
 
@@ -22,7 +23,7 @@ Older exports: `IsOnDuty(source)`, `GetOfficer(source)`, `GetOnDutyOfficers()`, 
 
 | Event | Arguments |
 |---|---|
-| `unitlink-police:server:callCreated` | `call` |
+| `unitlink-police:server:callCreated` | `call, callerSource` (the caller's server id for civilian 911 calls) |
 | `unitlink-police:server:callUpdated` | `call, action` |
 | `unitlink-police:server:callClosed` | `id, reason, by` |
 | `unitlink-police:server:unitsChanged` | none |
@@ -36,6 +37,8 @@ Client: `unitlink-police:dutyChanged (onDuty, state)`.
 | `GetActiveName(source)` | The name of the civilian profile the player is playing, or `nil` |
 | `GetActiveProfile(source)` | `{ id, firstname, lastname, dateofbirth, gender, nationality, height }`, or `nil` |
 | `GetIdentityMode()` | `'standalone'` (civilian profiles) or `'core'` (UnitLink-Core) |
+| `CreateWorkOrder({ category, description, priority, street, coords, requester })` | Creates a DOT work order (origin `agency`). Returns the number, or `nil` |
+| `GetFireIncidents()` | Active SAFR incidents |
 
 UnitLink-Police and UnitLink-HUD use `GetActiveName` to show the player's name.
 
@@ -45,7 +48,7 @@ UnitLink-Police and UnitLink-HUD use `GetActiveName` to show the player's name.
 |---|---|---|
 | `unitlink:server:req` | client → server | Every tablet action (`reqId, action, payload`). Each one is checked and rate-limited |
 | `unitlink:client:res` | server → client | The reply (`reqId, ok, data`) |
-| `unitlink:client:push` | server → client | Live updates: `board`, `note`, `callClosed`, `alertsChanged`, `signal100` |
+| `unitlink:client:push` | server → client | Live updates: `board`, `note`, `callClosed`, `alertsChanged`, `signal100`, `fire*`, `dot*`, `tools*` |
 | `unitlink:server:closed` | client → server | Tablet closed |
 
 {% hint style="warning" %}

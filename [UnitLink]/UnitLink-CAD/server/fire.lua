@@ -231,15 +231,7 @@ function Fire.open(o)
     local s = unitState(o.src)
     UL.DB.query([[INSERT INTO ul_fire_members (member_id, name, callsign, last_seen) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
         ON DUPLICATE KEY UPDATE name = VALUES(name), callsign = VALUES(callsign), last_seen = CURRENT_TIMESTAMP]], { o.charId, o.name:sub(1, 64), o.callsign })
-    local forms = {}
-    for _, f in ipairs(F.forms) do
-        local fields = {}
-        for _, fd in ipairs(f.fields) do
-            local t = fd[3]
-            fields[#fields + 1] = { key = fd[1], label = fd[2], type = type(t) == 'table' and 'list' or (LISTS[t] and 'list' or t), options = type(t) == 'table' and t or LISTS[t], required = fd[4] == true }
-        end
-        forms[#forms + 1] = { key = f.key, label = f.label, fields = fields }
-    end
+    local forms = UL.formsForUi(F.forms, LISTS)
     return true, {
         kind = 'fire', name = Config.Name,
         me = { src = o.src, callsign = o.callsign, short = o.short, name = o.name, dept = o.dept, supervisor = o.supervisor, apparatus = s.apparatus },
@@ -299,6 +291,7 @@ H('fire.create', nil, function(o, p)
     Fire.note(inc.id, 'SYSTEM', ('(SYSTEM) Incident created by %s'):format(o.label), true)
     if inc.message and inc.message ~= '' then Fire.note(inc.id, o.label, inc.message, false) end
     if p.attach ~= false then attach(o.src, inc.id, o.callsign) end
+    UL.activity(o, ('Created SAFR incident #%d (%s)'):format(inc.id, nature))
     return true, { id = inc.id }
 end)
 
@@ -390,6 +383,7 @@ H('fire.close', nil, function(o, p)
     Fire.incidents[id] = nil
     Fire.note(id, 'SYSTEM', ('(SYSTEM) Closed by %s: %s'):format(o.label, dispo), true)
     Fire.pushAll('fireClosed', { id = id, by = o.callsign, disposition = dispo })
+    UL.activity(o, ('Closed SAFR incident #%d (%s)'):format(id, dispo))
     markDirty()
     return true
 end)
@@ -430,6 +424,7 @@ H('fire.addPatient', nil, function(o, p)
     local count = UL.DB.scalar('SELECT COUNT(*) FROM ul_fire_patients WHERE incident_id = ?', { id }) or 0
     if count > inc.patients then inc.patients = count; persist(inc) end
     Fire.note(id, o.label, ('(SYSTEM) Patient: %s · %s · %s'):format(name:upper(), p.severity, p.destination), true)
+    UL.activity(o, ('Added patient %s to #%d'):format(name, id))
     markDirty()
     return true, { id = pid }
 end)
@@ -474,46 +469,9 @@ end
 H('fire.submitReport', nil, function(o, p)
     local form = FORMS[p.form]
     if not form then return false, 'Unknown report type.' end
-    local input = type(p.data) == 'table' and p.data or {}
-    local data, subject, subjectName, incId = {}, nil, nil, nil
-    for _, fd in ipairs(form.fields) do
-        local key, label, t, required = fd[1], fd[2], fd[3], fd[4] == true
-        local v = input[key]
-        if v == '' then v = nil end
-        if t == 'person' then
-            local id = UL.int(v)
-            if id then
-                local c = Identity.get(id)
-                if not c then return false, label .. ': person not found.' end
-                subject, subjectName = id, ('%s %s'):format(c.firstname, c.lastname)
-                data[key] = id
-            end
-        elseif t == 'incident' then
-            local id = UL.int(v)
-            if id then
-                if not incidentExists(id) then return false, label .. ': incident not found.' end
-                incId = id; data[key] = id
-            end
-        elseif t == 'number' then
-            local n = UL.int(v)
-            if v ~= nil and (not n or n < 0 or n > 999) then return false, label .. ' must be 0 to 999.' end
-            data[key] = n
-        elseif t == 'unit' then
-            data[key] = UL.clean(v, 12)
-        elseif t == 'text' then
-            data[key] = UL.clean(v, 200)
-        elseif t == 'area' then
-            data[key] = UL.cleanText(v, 1000)
-        elseif t == 'narr' then
-            data[key] = UL.cleanText(v, 4000)
-            if not data[key] or #data[key] < (F.minNarrative or 20) then return false, ('%s must be at least %d characters.'):format(label, F.minNarrative or 20) end
-        else
-            local options = type(t) == 'table' and t or LISTS[t]
-            if v ~= nil and not inList(options, v) then return false, label .. ': pick an option from the list.' end
-            data[key] = v
-        end
-        if required and data[key] == nil then return false, label .. ' is required.' end
-    end
+    local data, meta = UL.validateForm(form, p.data, { lists = LISTS, minNarrative = F.minNarrative, incidentExists = incidentExists })
+    if not data then return false, meta end
+    local subject, subjectName, incId = meta.subject, meta.subjectName, meta.incident
     local id = UL.DB.insert([[INSERT INTO ul_fire_reports (form, incident_id, subject_char, subject_name, author_char, author_label, data)
         VALUES (?, ?, ?, ?, ?, ?, ?)]], { form.key, incId, subject, subjectName, o.charId, o.label, UL.json(data) })
     if not id then return false, 'Database error. The report was not saved.' end
@@ -529,6 +487,7 @@ H('fire.submitReport', nil, function(o, p)
         end
     end
     if incId and Fire.incidents[incId] then Fire.note(incId, o.label, ('(SYSTEM) %s %s filed'):format(form.label:upper(), number), true) end
+    UL.activity(o, ('Filed %s (%s)'):format(number, form.label))
     return true, { number = number }
 end)
 
@@ -597,6 +556,7 @@ H('fire.mayday', nil, function(o, p)
     for id in pairs(s.incidents) do Fire.note(id, o.label, ('*** MAYDAY *** %s: %s'):format(o.callsign, Fire.mayday.detail or 'no details'), true) end
     notifyUnits(('**MAYDAY · %s** at %s%s'):format(o.callsign, Fire.mayday.location, Fire.mayday.detail and (' · ' .. Fire.mayday.detail) or ''), 'error', F.maydayAll)
     UL.log(('MAYDAY declared by %s'):format(o.label))
+    UL.activity(o, 'Declared MAYDAY')
     markDirty()
     Fire.pushAll('fireAlerts', {})
     return true
@@ -655,17 +615,17 @@ end)
 -- Civilians: /911fire and /911ems
 ---------------------------------------------------------------------
 local lastCall = {}
-RegisterNetEvent('unitlink:server:fire911', function(kind, message, street)
-    local src = source
-    if not UL.ready then return end
+-- Shared by /911fire, /911ems and the Civilian Portal. Returns ok, message, incident id.
+function Fire.civCall(src, kind, message, street)
+    if not UL.ready then return false, 'Dispatch is not ready.' end
     kind = kind == 'fire' and 'fire' or 'medical'
     local now = os.time()
     if lastCall[src] and now - lastCall[src] < (F.callCooldown or 60) then
-        return UL.notify(src, ('Please wait %d seconds before calling again.'):format((F.callCooldown or 60) - (now - lastCall[src])), 'error')
+        return false, ('Please wait %d seconds before calling again.'):format((F.callCooldown or 60) - (now - lastCall[src]))
     end
     message = UL.clean(message, 300)
     if not message or #message < 3 then
-        return UL.notify(src, ('Describe the emergency: /%s <what is happening>'):format(kind == 'fire' and F.commands.fire or F.commands.medical), 'error')
+        return false, ('Describe the emergency: /%s <what is happening>'):format(kind == 'fire' and F.commands.fire or F.commands.medical)
     end
     lastCall[src] = now
     local caller = Identity.activeName(src) or GetPlayerName(src) or ('Caller ' .. src)
@@ -674,7 +634,7 @@ RegisterNetEvent('unitlink:server:fire911', function(kind, message, street)
         priority = kind == 'fire' and 1 or 2, street = UL.clean(street, 120), coords = coordsOf(src),
         caller = caller:sub(1, 64), callback = ('555-%04d'):format(src % 10000), message = message, origin = '911',
     })
-    if not inc then return UL.notify(src, 'Your call could not be placed. Try again.', 'error') end
+    if not inc then return false, 'Your call could not be placed. Try again.' end
     Fire.note(inc.id, 'SYSTEM', ('911 CALL RECEIVED FROM %s: %s'):format(caller:upper(), message), true)
     local targets = {}
     for _, u in ipairs(Bridge.units()) do if isFire(u) then targets[#targets + 1] = u.source end end
@@ -683,8 +643,14 @@ RegisterNetEvent('unitlink:server:fire911', function(kind, message, street)
             exports['UnitLink-UI']:Dispatch(targets, { dept = 'safr', code = tostring(inc.id), title = inc.nature, message = message, priority = inc.priority, location = inc.street or 'See CAD' })
         end)
     end
-    UL.notify(src, #targets > 0 and 'Fire & Rescue has your call. Stay where you are if it is safe.'
-        or 'No Fire & Rescue units are on duty right now. Your call has been logged.', #targets > 0 and 'success' or 'warning')
+    return true, #targets > 0 and 'Fire & Rescue has your call. Stay where you are if it is safe.'
+        or 'No Fire & Rescue units are on duty right now. Your call has been logged.', inc.id, #targets > 0
+end
+
+RegisterNetEvent('unitlink:server:fire911', function(kind, message, street)
+    local src = source
+    local ok, msg, _, covered = Fire.civCall(src, kind, message, street)
+    UL.notify(src, msg, not ok and 'error' or covered and 'success' or 'warning')
 end)
 
 AddEventHandler('playerDropped', function() lastCall[source] = nil end)

@@ -10,6 +10,7 @@
   const age = sec => { const m = Math.max(0, Math.floor((Date.now()/1000 - sec) / 60)); return m < 60 ? m + 'm' : Math.floor(m/60) + 'h' + (m%60) + 'm'; };
   const yrs = dob => { const d = new Date(dob); return isNaN(d) ? '' : Math.floor((Date.now() - d) / (365.25 * 864e5)); };
   const I = {
+    tools:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M8 11h6M11 8v6"/>',
     cad:'<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>', star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
     cross:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>', forms:'<path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h3"/>', alert:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.1"/>',
     station:'<path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/>', history:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/>',
@@ -55,7 +56,7 @@
   const TILES = [
     ['cad', 'CAD', '#fff', 'cad'], ['mycall', 'My Incident', '#cbd5e1', 'star'], ['patients', 'Patients', '#ff8a8a', 'cross'], ['forms', 'Reports', '#fff', 'forms'],
     ['alerts', 'Alerts', '#ff6b6b', 'alert'], ['mgmt', 'Station Mgmt', '#9cc3ff', 'station'], ['history', 'History', '#9cc3ff', 'history'], ['|'],
-    ['newcall', 'New Incident', '#3ee06a', 'phone'], ['assign', 'Assign Self', '#3ee06a', 'phone'], ['|'], ['announce', 'Announce', '#ffd257', 'mega'], ['mayday', 'Mayday', '#ff6b6b', 'bell'],
+    ['newcall', 'New Incident', '#3ee06a', 'phone'], ['assign', 'Assign Self', '#3ee06a', 'phone'], ['|'], ['tools', 'Tools', '#ffd257', 'tools'], ['announce', 'Announce', '#ffd257', 'mega'], ['mayday', 'Mayday', '#ff6b6b', 'bell'],
   ];
   function tileOff(t) {
     if (t === 'mycall') return !myIncidents().length;
@@ -65,7 +66,7 @@
   }
   function chrome() {
     $('#fToolbar').innerHTML = TILES.map(t => t[0] === '|' ? '<div class="gap"></div>' :
-      `<div class="tile ${t[0] === 'mayday' ? 'panic' + (S.board.mayday ? ' blinking' : '') : ''} ${tileOff(t[0]) ? 'off' : ''} ${t[0] === S.screen || (S.screen === 'call' && t[0] === 'mycall' && myIncidents().includes(S.open)) ? 'on' : ''}" data-t="${t[0]}"${t[0] === 'announce' && !S.me.supervisor ? ' title="Supervisors only"' : ''}>${svg(t[3], t[2])}${t[1]}</div>`).join('') +
+      `<div class="tile ${t[0] === 'mayday' ? 'panic' + (S.board.mayday ? ' blinking' : '') : ''} ${tileOff(t[0]) ? 'off' : ''} ${t[0] === S.screen || (S.screen === 'call' && t[0] === 'mycall' && myIncidents().includes(S.open)) ? 'on' : ''}" data-t="${t[0]}"${t[0] === 'announce' && !S.me.supervisor ? ' title="Supervisors only"' : ''}>${svg(t[3], t[2])}${t[1]}${t[0] === 'tools' && window.ULTools && ULTools.unread() ? `<i class="badge">${ULTools.unread()}</i>` : ''}</div>`).join('') +
       '<div class="seal"><div>SAFR</div></div>';
     $$('#fToolbar .tile').forEach(el => el.onclick = () => !el.classList.contains('off') && action(el.dataset.t));
     const u = myUnit();
@@ -91,6 +92,7 @@
     if (t === 'assign') { if (await call('fire.assign', { id: S.sel }, `Attached to #${S.sel}`)) refresh(); return; }
     if (t === 'announce') return announceModal();
     if (t === 'mayday') return maydayModal();
+    if (t === 'tools') return window.ULTools && ULTools.open();
     show(t);
   }
   async function refresh() { const b = await call('fire.board'); if (b) applyBoard(b); }
@@ -448,8 +450,9 @@
     S.cfg = d; S.me = d.me; S.board = d.board; S.screen = 'cad'; S.data = null;
     $('#fire').classList.add('on');
     show('cad');
+    if (window.ULTools) ULTools.attach('fire', d.me, chrome);
   });
-  UL.on('closeFire', () => { $('#fire').classList.remove('on'); closeModal(); });
+  UL.on('closeFire', () => { $('#fire').classList.remove('on'); closeModal(); if (window.ULTools) ULTools.close(); });
   UL.on('firePush', m => {
     if (!S.cfg) return;
     if (m.kind === 'fireBoard') applyBoard(m.data);
@@ -467,6 +470,7 @@
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape' || !$('#fire').classList.contains('on')) return;
     if ($('#fModal').classList.contains('on')) return closeModal();
+    if (window.ULTools && ULTools.isOpen()) return ULTools.close();
     UL.req('close');
   });
   setInterval(() => { const d = new Date(); $('#fClock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }, 1000);

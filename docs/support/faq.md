@@ -15,7 +15,7 @@ No. It waits for a supervisor's approval. A supervisor's own warrant goes active
 <details>
 <summary>Can Fire / EMS use UnitLink?</summary>
 
-Not yet. By default only LEO can open it. A Fire & Rescue CAD is on the [roadmap](../roadmap/safr.md).
+Not yet. By default only LEO can open it. A Fire & Rescue CAD is on the [roadmap](../safr/overview.md).
 </details>
 
 <details>

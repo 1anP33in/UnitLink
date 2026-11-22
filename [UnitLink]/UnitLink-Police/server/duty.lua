@@ -395,3 +395,16 @@ end)
 Police.on('rosterChanged', function()
     TriggerEvent('unitlink-police:server:unitsChanged')
 end)
+
+-- Read-only department list for the UnitLink Admin Dashboard: names, types and
+-- the ACE permission each one uses (nothing here can be changed in game).
+exports('GetDepartments', function()
+    local list = {}
+    for key, d in pairs(Config.Departments) do
+        local perm = (Config.Permissions.departments or {})[key] or {}
+        list[#list + 1] = { key = key, order = d.order, short = d.short, name = d.name, type = d.type,
+            duty = perm.node, supervisor = perm.supervisor, callsignExample = d.callsign and d.callsign.example }
+    end
+    table.sort(list, function(a, b) return (a.order or 99) < (b.order or 99) end)
+    return list
+end)

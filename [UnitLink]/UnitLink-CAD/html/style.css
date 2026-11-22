@@ -177,9 +177,8 @@ textarea.fin{resize:vertical;min-height:90px;font-weight:600;font-family:inherit
 .toast.err{background:#5a1418;border-color:#a3262d}
 
 /* Civilian ID window (/civ): same look as the CAD, smaller frame */
-#civ{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.35)}
-#civ.on{display:grid;animation:tabIn .25s cubic-bezier(.2,.8,.2,1)}
-#civ .civwin{width:min(1180px,92vw);height:min(720px,86vh);min-width:0;border-radius:10px;border:1px solid #3a3d44;box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 0 0 2px #26282d;background:#000}
+#civ,#admin{position:fixed;inset:3.5vh 3vw;display:none;border-radius:14px;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 0 0 2px #26282d;border:1px solid #3a3d44}
+#civ.on,#admin.on{display:block;animation:tabIn .25s cubic-bezier(.2,.8,.2,1)}
 .cscreen{position:absolute;inset:0;display:flex;padding:8px;gap:8px}
 #civ .ret{min-height:0}
 
@@ -210,3 +209,37 @@ textarea.fin{resize:vertical;min-height:90px;font-weight:600;font-family:inherit
 .xchecks{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line-2);border-radius:4px;padding:6px;background:#0d0e10}
 .xchecks label{display:flex;gap:6px;align-items:center;padding:3px 4px;border-radius:3px;cursor:pointer;font-weight:600}
 .xchecks label:hover{background:#1d2a3d}
+
+/* DOT: Work Orders (same frame, amber seal) */
+#dot{position:fixed;inset:3.5vh 3vw;display:none;border-radius:14px;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 0 0 2px #26282d;border:1px solid #3a3d44}
+#dot.on{display:block;animation:tabIn .25s cubic-bezier(.2,.8,.2,1)}
+#dot .seal{background:radial-gradient(circle at 50% 40%,#b7791f,#3a2608);border-color:#f59e0b}
+#dot .seal div{border-color:#f59e0b99;color:#fde7b5}
+.fscreen.fleet{flex-direction:column}
+td.trunc{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.uchip.eq{color:#cfe0f5;border-color:#2d5aa0;background:#13233d}.uchip.eq b{cursor:pointer;color:#fca5a5;margin-left:4px}
+.uchip.add{cursor:pointer;color:#9cc3ff;border:1px dashed #2d5aa0;background:transparent}
+.tile{position:relative}
+.tile .badge{position:absolute;top:3px;right:5px;background:#dc2626;border-radius:8px;font-style:normal;font-size:9.5px;font-weight:800;padding:0 4px;line-height:14px;color:#fff}
+
+/* Shared Tools window (over any department tablet) */
+#tools{position:fixed;inset:7vh 6vw;display:none;z-index:60;border-radius:10px;background:#000;padding:8px;box-shadow:0 30px 90px rgba(0,0,0,.8),inset 0 0 0 2px #26282d;border:1px solid #3a3d44}
+#tools.on{display:block;animation:tabIn .2s cubic-bezier(.2,.8,.2,1)}
+#tools .win{min-width:0}
+#tools .seal{background:radial-gradient(circle at 50% 40%,#3b5f93,#0e1e38)}
+#tools .sform .fin{max-width:420px}
+.fscreen.tools-search,.fscreen.tools-bolos,.fscreen.tools-links,.fscreen.tools-activity{flex-direction:column}
+.fscreen .panel.main{flex:1;min-width:0}.fscreen .panel.side{flex:0 0 360px}
+
+/* Civilian Portal + Admin Dashboard (same frame as the department CADs) */
+#civ .seal{background:radial-gradient(circle at 50% 40%,#2f7d4f,#0b2a18);border-color:#3ee06a}
+#civ .seal div{border-color:#3ee06a99;color:#c9f7d8}
+#admin .seal{background:radial-gradient(circle at 50% 40%,#8b1d24,#2a0609);border-color:#ff6b6b}
+#admin .seal div{border-color:#ff6b6b99;color:#ffd6d6}
+.fscreen.civ-records,.fscreen.civ-new,.fscreen.adm-overview,.fscreen.adm-laws,.fscreen.adm-activity,.fscreen.adm-audit,.fscreen.adm-perms,.fscreen.adm-depts{flex-direction:column}
+.stats{display:flex;gap:8px;padding:10px;border-bottom:1px solid var(--line);flex:none;flex-wrap:wrap}
+.stat{flex:1;min-width:84px;background:#0f1c30;border:1px solid #23406b;border-radius:5px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:22px;font-family:var(--mono);color:#fff}.stat span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.stat.r{border-color:#a3262d;background:#2a0d10}.stat.r b{color:#ff6b6b}
+.stat.y{border-color:#a07a14;background:#2a2008}.stat.y b{color:#ffd257}
+.stat.g{border-color:#1f7a3f;background:#0c2416}.stat.g b{color:#3ee06a}

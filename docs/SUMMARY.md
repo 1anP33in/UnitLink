@@ -17,7 +17,7 @@
 
 * [Overview](unitlink/overview.md)
 * [Opening the Tablet](unitlink/opening-the-tablet.md)
-* [Civilian ID (/civ)](unitlink/civilian-id.md)
+* [Civilian Portal (/civ)](unitlink/civilian-portal.md)
 * [CAD Board](unitlink/cad-board.md)
 * [Call Records](unitlink/call-records.md)
 * [Name Search & State Returns](unitlink/name-search.md)
@@ -25,6 +25,7 @@
 * [Alerts, Warrants & BOLOs](unitlink/alerts.md)
 * [Laws & Call History](unitlink/laws-and-history.md)
 * [Signal 100 & Panic](unitlink/signal-100-and-panic.md)
+* [Shared Tools](unitlink/shared-tools.md)
 
 ## Fire & Rescue (SAFR)
 
@@ -33,6 +34,15 @@
 * [Reports](safr/reports.md)
 * [Alerts & MAYDAY](safr/alerts-and-mayday.md)
 * [Station Management](safr/station-management.md)
+
+## DOT: Work Orders
+
+* [DOT Overview](dot/overview.md)
+* [Fleet & Road Alerts](dot/fleet-and-road-alerts.md)
+
+## Admin
+
+* [Admin Dashboard (/cadadmin)](admin/admin-dashboard.md)
 
 ## Rules
 
@@ -64,10 +74,6 @@
 ## Roadmap
 
 * [What's Coming](roadmap/overview.md)
-* [DOT: Work Orders](roadmap/dot.md)
-* [Civilian Portal](roadmap/civilian-portal.md)
-* [Admin Dashboard](roadmap/admin-dashboard.md)
-* [Shared Tools](roadmap/shared-tools.md)
 
 ## Support
 

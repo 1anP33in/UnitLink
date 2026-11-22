@@ -105,7 +105,7 @@ end
 -- Access: who is asking? (fresh every request, never trusted from client)
 -- Returns officer table or nil, error
 ---------------------------------------------------------------------
--- kind: 'leo' (police CAD, Config.AccessFlag) or 'fire' (SAFR, Config.Fire.accessFlag)
+-- kind: 'leo' (police CAD, Config.AccessFlag), 'fire' (SAFR, Config.Fire.accessFlag) or 'dot' (Config.Dot.accessFlag)
 function UL.officer(src)
     local unit = Bridge.unit(src)
     if not unit then return nil, 'You must be on duty to use ' .. Config.Name .. '.' end
@@ -113,6 +113,8 @@ function UL.officer(src)
     local kind = nil
     if Config.Fire and Config.Fire.enabled and Config.Fire.accessFlag and flags[Config.Fire.accessFlag] then
         kind = 'fire'
+    elseif Config.Dot and Config.Dot.enabled and Config.Dot.accessFlag and flags[Config.Dot.accessFlag] then
+        kind = 'dot'
     elseif not Config.AccessFlag or flags[Config.AccessFlag] then
         kind = 'leo'
     end
@@ -159,6 +161,21 @@ RegisterNetEvent('unitlink:server:req', function(reqId, action, payload)
         return reply(success, data)
     end
 
+    -- Admin Dashboard requests: ACE only (Config.Admin.ace), no duty needed (server/admin.lua)
+    local ah = UL.adminHandlers and UL.adminHandlers[action]
+    if ah then
+        if limited(src) then return reply(false, 'Slow down.') end
+        if not IsPlayerAceAllowed(src, (Config.Admin and Config.Admin.ace) or 'unitlink.admin') then return reply(false, 'You do not have the UnitLink admin permission.') end
+        if not UL.ready then return reply(false, 'Database is not ready.') end
+        local who = ('%s [%s]'):format(GetPlayerName(src) or 'Admin', src)
+        local ok, success, data = pcall(ah, src, who, type(payload) == 'table' and payload or {})
+        if not ok then
+            UL.log('^1error in "' .. action .. '": ' .. tostring(success) .. '^7')
+            return reply(false, 'Server error. Try again.')
+        end
+        return reply(success, data)
+    end
+
     local h = UL.handlers[action]
     if not h then return reply(false, 'Unknown request.') end
     if limited(src) then return reply(false, 'Slow down.') end
@@ -169,6 +186,7 @@ RegisterNetEvent('unitlink:server:req', function(reqId, action, payload)
     if h.kind ~= 'any' and h.kind ~= officer.kind then return reply(false, 'That is not part of your CAD.') end
     if h.supervisor and not officer.supervisor then return reply(false, 'Supervisors only.') end
 
+    if action == 'open' then pcall(UL.employee, officer) end
     local ok, success, data = pcall(h.fn, officer, type(payload) == 'table' and payload or {})
     if not ok then
         UL.log('^1error in "' .. action .. '": ' .. tostring(success) .. '^7')

@@ -23,10 +23,15 @@ server_scripts {
     'server/main.lua',
     'server/identity.lua',
     'server/bridge.lua',
+    'server/common.lua',
     'server/calls.lua',
     'server/records.lua',
     'server/alerts.lua',
     'server/fire.lua',
+    'server/dot.lua',
+    'server/shared.lua',
+    'server/civ.lua',
+    'server/admin.lua',
 }
 
 client_scripts {

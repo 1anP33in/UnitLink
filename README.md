@@ -2,13 +2,13 @@
 
 UnitLink is an in-game CAD / MDT tablet for FiveM roleplay servers, together with the UnitLink scripts it needs. This repo mirrors the server's `resources` folder, so every script sits in the same category folder it uses on the server.
 
-> **Status:** built and checked offline. The Lua compiles, the NUI was clicked through in a browser, and UnitLink-Core's 262 tests pass. It has **not been run on a live FXServer yet.** See the testing checklist in [the UnitLink README](<[UnitLink]/UnitLink-CAD/README.md>).
+> **Status:** built and checked offline. The Lua compiles, every tablet was clicked through in a browser against the real server code, and the server logic passed its tests against a test database. It has **not been run on a live FXServer yet.** See the testing checklist in [the UnitLink README](<[UnitLink]/UnitLink-CAD/README.md>).
 
 ## Scripts
 
 | Resource | Folder | What it does for UnitLink |
 |---|---|---|
-| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablets (`/cad` or F5): the **police CAD** for LEO and the **SAFR Fire & Rescue CAD** for fire / EMS. Also `/civ` civilian profiles and `/911fire`, `/911ems` |
+| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablets (`/cad` or F5): the **police CAD**, the **SAFR Fire & Rescue CAD** and **DOT Work Orders**, each with **Shared Tools**. Also the **Civilian Portal** (`/civ`), the **Admin Dashboard** (`/cadadmin`), and `/911fire`, `/911ems` |
 | **UnitLink-Police** | `[UnitLink]/UnitLink-Police` | Calls, units, statuses, attaching and closing calls (CAD exports). 911 calls show up in UnitLink live, and changes made in the CAD show up on the 911 cards |
 | **UnitLink-Core** *(optional)* | `[UnitLink]/UnitLink-Core` | Character framework. Only needed if you want UnitLink-Core characters; without it, UnitLink is fully standalone |
 | **UnitLink-UI** | `[UnitLink]/UnitLink-UI` | Notifications |
@@ -77,7 +77,7 @@ set unitlink_core_log_webhook "https://discord.com/api/webhooks/..."          # 
 
 4. Optional: UnitLink-Police's webhook URLs go in `UnitLink-Police/config/webhooks.lua`. They're blank in this repo, so keep real ones out of commits.
 5. Start the server. The database tables are created automatically.
-6. Give officers access with ACE permissions: copy the groups from [`aceperms.md`](aceperms.md) into `server.cfg` and add each officer's license. Civilians make their profile in game with `/civ`.
+6. Give officers access with ACE permissions: follow the examples in [`aceperms.md`](aceperms.md) and add each officer's license. Civilians make their profile in game with `/civ`.
 
 ## UnitLink at a glance
 
@@ -99,41 +99,32 @@ set unitlink_core_log_webhook "https://discord.com/api/webhooks/..."          # 
   - Narratives need at least 20 characters.
   - Every request is checked again on the server and rate-limited.
 
-## Future
+## Departments and dashboards
 
-These are designed and working as **browser preview mockups only**. None of them are in the Lua yet. Every one uses the same look as the Police CAD: blue toolbar of tile buttons, gray panels, data tables and blue status bar.
+Every screen uses the same look as the Police CAD: blue toolbar of tile buttons, gray panels, data tables and blue status bar.
 
 ### SAFR: Fire & Rescue CAD
 - **Board:** live incidents and apparatus. Unit statuses are Available, En Route, On Scene, Transporting, At Hospital, Busy and Out of Service.
-- **Incident records:** call type (Medical, Fire, Rescue, MVC, Hazmat), priority, caller, apparatus and personnel, patient count and timestamped notes.
-- **Patient records:** injury, severity, treatment, where they were taken, condition, and each person's medical history.
-- **Reports:** Patient Care Report, Fire Incident, Rescue, Vehicle Collision, Hazmat and Hospital Transport.
-- **Alerts:** medical, fire and rescue calls, mutual aid requests, **Mayday** and station announcements.
-- **Management:** stations, apparatus, callsigns, ranks, certifications and personnel roster.
+- **Incidents and patients:** call type, priority, caller, apparatus, patient records and each person's medical history.
+- **Reports, alerts, MAYDAY, mutual aid, station management** (roster, apparatus, certifications).
 
 ### DOT: Work Orders
-- **Board:** live DOT units and work orders, with filters for roadside, traffic control, vehicle recovery, maintenance and construction.
-- **Work orders:** number, job type, description, priority, location, assigned crew, required equipment, status and completion notes.
-- **Fleet & Equipment:** vehicles assigned to employees (tow, service and maintenance trucks), equipment checkout and return, and maintenance records.
-- **Reports:** road hazard, vehicle recovery, road closure request (supervisor approval), road inspection, maintenance completion and equipment damage.
-- **Road alerts:** closures, major highway hazards, traffic control requests, emergency roadside requests and active construction zones.
+- **Job board** with filters, **work orders** (WO-5001 and up) with equipment, crew, status and completion notes.
+- **Fleet & equipment:** vehicles, equipment checkout and return, maintenance records.
+- **Reports:** road hazard, vehicle recovery, road closure request (supervisor approval), road inspection, maintenance completion, equipment damage.
+- **Road alerts:** closures, highway hazards, traffic control, roadside requests, construction zones, announcements.
 
-### Civilian Portal
-- **Dashboard:** profile, driver's / firearm / pilot licenses, vehicles, warrants, citations, arrests and medical history.
-- **911:** choose Police, Fire, Medical or DOT. The caller's details are attached automatically, and the call goes to the right department's board. The caller can follow its status live and see updates from dispatch.
-- **Records:** citations, arrests, warrants, licenses, vehicles, businesses and service requests.
-- **Applications:** driver's, firearm and pilot licenses, business registration, vehicle registration and renewals, with automatic checks (for example, a firearm license is denied while the person has an active warrant).
-- **Service requests:** roadside assistance, road hazards, non-emergency help and public works.
+### Civilian Portal (`/civ`)
+- **Dashboard:** ID, licenses and points, warrants, fines (records only, they expire), citations, arrests, vehicles, medical history.
+- **911** to Police, Fire or Ambulance with **call tracking**, and **service requests** that become DOT work orders.
+- **Vehicles** (report stolen posts a shared BOLO), **businesses** and **applications** for licenses, registrations and business licenses.
 
-### Central Admin Dashboard
-- **Departments:** create, edit and delete departments; logo, abbreviation and color; turn them on or off; choose which call types each one receives; CAD access and visibility.
-- **Sub-departments:** each has its own ranks, permissions, callsign format, unit statuses and members.
-- **Ranks & permissions:** rank order and a grid of permissions per rank (supervisor, approve warrants, Signal 100, announcements, roster, records, medical access, closing calls).
-- **Employees:** search, create accounts, put one person in several departments, set ranks and callsigns, suspend, remove access, and see their activity.
-- **System config:** call types, priorities, unit statuses, citation points, license point limits, report rules, notifications, and which departments can see which records.
-- **Audit history:** every admin change.
+### Admin Dashboard (`/cadadmin`, ACE `unitlink.admin`)
+- Overview, departments and permissions (**read only**), the applications queue, civilian licenses and vehicles, **laws & fines**, settings, activity and an **audit log** of every change.
 
-### Shared across all departments
-Global search (people, vehicles, calls, reports), live notifications, unit messaging, activity logs, shared or department-only BOLOs, linking one incident across several departments, GPS to calls and work orders, employee profiles, audit history, and a permission system based on rank and department.
+### Shared Tools (every department tablet)
+Global search, messages to all units / a department / one unit, shared BOLOs, incident links across departments, activity logs and employee profiles.
 
-New departments planned for these mockups include the **San Andreas Department of Justice** (District Attorney's Office and Superior Court).
+## Ideas for later
+
+The **San Andreas Department of Justice** (District Attorney's Office and Superior Court), named ranks, and license renewals.

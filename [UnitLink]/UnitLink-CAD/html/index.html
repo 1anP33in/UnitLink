@@ -134,23 +134,87 @@
  </div>
 </div>
 
-<!-- CIVILIAN ID (/civ) -->
+<!-- DOT: WORK ORDERS -->
+<div id="dot">
+ <div class="win">
+  <div class="menubar">
+    <span>File</span><span>View</span><span>Tools</span><span>Help</span>
+    <span class="title" id="dTitle">DOT · Job Board</span>
+    <span class="brand">UNITLINK · DOT</span>
+    <span class="x" id="dClose" title="Close (Esc)">✕ Close</span>
+  </div>
+  <div class="toolbar" id="dToolbar"></div>
+  <div class="screens">
+    <section class="fscreen" id="dScreen"></section>
+    <div class="modal" id="dModal"><div class="mbox"><div class="mh" id="dmTitle"></div><div class="mb" id="dmBody"></div><div class="mf" id="dmFoot"></div></div></div>
+    <div class="toast" id="dToast"></div>
+  </div>
+  <div class="statusbar">
+    <div><span class="dot"></span>Connected</div>
+    <div>Status: <select id="dsStatus"></select></div>
+    <div>Vehicle: <select id="dsVeh"></select></div>
+    <div id="dsCall">No Active Job</div>
+    <div id="dsUnit"></div>
+    <div class="clock" id="dClock">--:--:--</div>
+  </div>
+ </div>
+</div>
+
+<!-- CIVILIAN PORTAL (/civ) -->
 <div id="civ">
- <div class="win civwin">
-  <div class="menubar"><span>File</span><span>Help</span><span class="title" id="civTitle">Civilian ID</span><span class="brand">UNITLINK</span><span class="x" id="civClose" title="Close (Esc)">✕ Close</span></div>
-  <div class="toolbar"><div id="civTiles" style="display:flex;gap:6px"></div><div class="seal"><div>CIV<br>ID</div></div></div>
-  <div class="screens"><section class="cscreen" id="civBody"></section><div class="toast" id="civToast"></div></div>
+ <div class="win">
+  <div class="menubar">
+    <span>File</span><span>View</span><span>Help</span>
+    <span class="title" id="civTitle">Civilian Portal</span>
+    <span class="brand">UNITLINK · CIVILIAN</span>
+    <span class="x" id="civClose" title="Close (Esc)">✕ Close</span>
+  </div>
+  <div class="toolbar"><div id="civTiles" style="display:flex;gap:6px;align-items:center"></div><div class="seal"><div>CIV</div></div></div>
+  <div class="screens">
+    <section class="fscreen" id="civBody"></section>
+    <div class="modal" id="cModal"><div class="mbox"><div class="mh" id="cmTitle"></div><div class="mb" id="cmBody"></div><div class="mf" id="cmFoot"></div></div></div>
+    <div class="toast" id="civToast"></div>
+  </div>
   <div class="statusbar">
     <div><span class="dot"></span>Connected</div>
     <div>Playing as: <b id="civActive" style="margin-left:4px"></b></div>
     <div id="civCount"></div>
+    <div id="civWarn" class="sig" style="display:none"></div>
     <div class="clock" id="civClock">--:--:--</div>
   </div>
  </div>
 </div>
+
+<!-- ADMIN DASHBOARD (/cadadmin) -->
+<div id="admin">
+ <div class="win">
+  <div class="menubar">
+    <span>File</span><span>View</span><span>Help</span>
+    <span class="title" id="aTitle">Admin Dashboard</span>
+    <span class="brand">UNITLINK · ADMIN</span>
+    <span class="x" id="aClose" title="Close (Esc)">✕ Close</span>
+  </div>
+  <div class="toolbar" id="aToolbar"></div>
+  <div class="screens">
+    <section class="fscreen" id="aScreen"></section>
+    <div class="modal" id="aModal"><div class="mbox"><div class="mh" id="amTitle"></div><div class="mb" id="amBody"></div><div class="mf" id="amFoot"></div></div></div>
+    <div class="toast" id="aToast"></div>
+  </div>
+  <div class="statusbar">
+    <div><span class="dot"></span>Connected</div>
+    <div id="asWho"></div>
+    <div id="asPending"></div>
+    <div id="asIdentity"></div>
+    <div class="clock" id="aClock">--:--:--</div>
+  </div>
+ </div>
+</div>
 <script src="js/api.js"></script>
+<script src="js/tools.js"></script>
 <script src="js/app.js"></script>
 <script src="js/civ.js"></script>
 <script src="js/fire.js"></script>
+<script src="js/dot.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>

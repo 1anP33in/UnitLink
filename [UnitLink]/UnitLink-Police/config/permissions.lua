@@ -10,7 +10,7 @@
 --   add_principal identifier.license:xxxxxxxx group.sasp
 --
 -- Granting the parent node (unitlink.sasp) also allows its children.
--- The full list, ready to paste, is in aceperms.md at the repo root.
+-- Examples (and how to add more) are in aceperms.md at the repo root.
 --
 -- Framework mode (Config.Framework.enabled = true): the same strings are
 -- UnitLink-Core permission nodes on the player's active character.
@@ -22,6 +22,7 @@ Config.Permissions = {
         lsp  = { node = 'unitlink.lsp.duty',  supervisor = 'unitlink.lsp.supervisor' },
         dhs  = { node = 'unitlink.dhs.duty',  supervisor = 'unitlink.dhs.supervisor' },
         safr = { node = 'unitlink.safr.duty', supervisor = 'unitlink.safr.supervisor' },
+        dot  = { node = 'unitlink.dot.duty',  supervisor = 'unitlink.dot.supervisor' },
         faa  = { node = 'unitlink.faa.duty',  supervisor = 'unitlink.faa.supervisor' },
     },
 

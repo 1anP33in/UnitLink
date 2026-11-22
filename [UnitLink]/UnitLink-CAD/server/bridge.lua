@@ -61,6 +61,11 @@ function Bridge.unassign(src, id) return action('UnassignUnit', src, id) end
 function Bridge.closeCall(src, id) return action('CloseCall', src, id) end
 function Bridge.setStatus(src, status) return action('SetUnitStatus', src, status) end
 
+function Bridge.departments()
+    local ok, list = call('UnitLink-Police', 'GetDepartments')
+    return ok and list or {}
+end
+
 function Bridge.isSupervisor(src)
     local ok, v = call('UnitLink-Police', 'IsSupervisor', src)
     return ok and v == true

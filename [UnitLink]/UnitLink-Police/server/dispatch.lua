@@ -178,7 +178,8 @@ local function createCall(opts)
 
     -- quiet calls (e.g. self-initiated traffic stops) are stored without popping cards
     broadcast(opts.quiet and 'callUpdate' or 'callNew', view(call))
-    external('callCreated', view(call))
+    -- second argument: the caller's server id (local server event only, never sent to clients)
+    external('callCreated', view(call), call.caller)
     return call
 end
 

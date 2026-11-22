@@ -131,6 +131,7 @@ AddEventHandler('unitlink-police:server:unitsChanged', markDirty)
 ---------------------------------------------------------------------
 UL.handle('open', { kind = 'any' }, function(o)
     if o.kind == 'fire' then return Fire.open(o) end
+    if o.kind == 'dot' then return Dot.open(o) end
     UL.viewers[o.src] = true
     local statuses = {}
     for _, s in ipairs(Config.Statuses) do statuses[#statuses + 1] = { code = s.code, label = s.label } end
