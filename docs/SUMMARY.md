@@ -1,6 +1,9 @@
 # Table of contents
 
+## Welcome
+
 * [Welcome](README.md)
+* [Showcase](welcome/showcase.md)
 
 ## Getting Started
 
@@ -29,7 +32,7 @@
 
 ## Configuration
 
-* [UnitLink Config](configuration/ulcore-config.md)
+* [UnitLink Config](configuration/unitlink-config.md)
 * [Editing the Laws](configuration/laws.md)
 
 ## Required Scripts
