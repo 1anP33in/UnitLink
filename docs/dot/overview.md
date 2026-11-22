@@ -17,7 +17,6 @@ The **DOT (Department of Transportation) tablet** handles work orders, roadside 
 | **Fleet & Equip** | Vehicles, equipment inventory, maintenance records. See [Fleet & Road Alerts](fleet-and-road-alerts.md) |
 | **Reports** | The 6 DOT reports |
 | **Road Alerts** | Closures, highway hazards, traffic control, roadside requests, construction zones, announcements |
-| **Crew Roster** | Members and certifications (supervisors edit) |
 | **History** | The last 100 completed work orders |
 | **New Job** | A self-initiated work order at your position |
 | **Assign Self** | Attaches you to the selected work order |
@@ -46,4 +45,4 @@ Numbers start at **WO-5001**. A work order has a category, description, priority
 | Maintenance Completion | `MCR-` | Filed |
 | Equipment Damage | `EDR-` | "Not serviceable" takes the vehicle **out of service** and opens a maintenance record |
 
-Everything is set in `UnitLink-CAD/config.lua` under `Config.Dot`: categories, filters, statuses, dispositions, fleet, equipment, closure reasons, certifications and the report forms.
+Everything is set in `UnitLink-CAD/config.lua` under `Config.Dot`: categories, filters, statuses, dispositions, fleet, equipment, closure reasons and the report forms.

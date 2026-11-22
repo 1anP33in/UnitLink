@@ -185,13 +185,11 @@ AddEventHandler('playerDropped', function() Dot.viewers[source] = nil end)
 function Dot.open(o)
     Dot.viewers[o.src] = true
     local s = unitState(o.src)
-    UL.DB.query([[INSERT INTO ul_dot_members (member_id, name, callsign, last_seen) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-        ON DUPLICATE KEY UPDATE name = VALUES(name), callsign = VALUES(callsign), last_seen = CURRENT_TIMESTAMP]], { o.charId, o.name:sub(1, 64), o.callsign })
     return true, {
         kind = 'dot', name = Config.Name,
         me = { src = o.src, callsign = o.callsign, short = o.short, name = o.name, dept = o.dept, supervisor = o.supervisor, vehicle = s.vehicle },
         statuses = D.statuses, categories = D.categories, filters = D.filters, orderStatuses = D.orderStatuses, dispositions = D.dispositions,
-        fleet = D.fleet, equipment = D.equipment, closureReasons = D.closureReasons, directions = D.directions, certifications = D.certifications,
+        fleet = D.fleet, equipment = D.equipment, closureReasons = D.closureReasons, directions = D.directions,
         forms = UL.formsForUi(D.forms, LISTS), minNarrative = D.minNarrative, board = Dot.board(),
     }
 end
@@ -559,31 +557,6 @@ H('dot.announce', { supervisor = true }, function(o, p)
         if isDot(u) then UL.notify(u.source, ('**%s**%s'):format(title, body and body ~= '' and (' · ' .. body) or ''), 'announce') end
     end
     Dot.pushAll('dotAlerts', {})
-    return true
-end)
-
----------------------------------------------------------------------
--- Roster / certifications
----------------------------------------------------------------------
-H('dot.roster', nil, function()
-    local rows = UL.DB.query('SELECT member_id, name, callsign, certs, UNIX_TIMESTAMP(last_seen) AS seen FROM ul_dot_members ORDER BY name LIMIT 200') or {}
-    local onDuty = {}
-    for _, u in ipairs(dotUnits()) do local id = Identity.officerId(u.source); if id then onDuty[id] = u end end
-    for _, r in ipairs(rows) do
-        r.certs = UL.decode(r.certs, {})
-        local u = onDuty[r.member_id]
-        if u then r.onDuty = { callsign = u.callsign, status = u.status, vehicle = u.vehicle } end
-    end
-    return true, rows
-end)
-
-H('dot.setCerts', { supervisor = true }, function(o, p)
-    local id = UL.int(p.member)
-    if not id then return false, 'Pick a member.' end
-    local certs = {}
-    for _, c in ipairs(type(p.certs) == 'table' and p.certs or {}) do if inList(D.certifications, c) then certs[#certs + 1] = c end end
-    local n = UL.DB.update('UPDATE ul_dot_members SET certs = ? WHERE member_id = ?', { UL.json(certs), id }) or 0
-    if n == 0 then return false, 'Member not found.' end
     return true
 end)
 

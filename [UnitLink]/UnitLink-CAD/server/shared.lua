@@ -2,7 +2,7 @@
 -- Shared tools: every department tablet (police, SAFR, DOT) has a
 -- Tools window with the same features:
 --   global search, messages, shared BOLOs, incident links,
---   activity log, employee profiles.
+--   activity log.
 -- All requests are kind = 'any' (on duty in any UnitLink department).
 ---------------------------------------------------------------------
 local T = Config.Tools or {}
@@ -202,7 +202,7 @@ H('tools.unlink', nil, function(o, p)
 end)
 
 ---------------------------------------------------------------------
--- Activity + employee profiles
+-- Activity
 ---------------------------------------------------------------------
 H('tools.activity', nil, function(o, p)
     local rows
@@ -214,36 +214,4 @@ H('tools.activity', nil, function(o, p)
     end
     if not rows then return false, 'Database error.' end
     return true, rows
-end)
-
-H('tools.profiles', nil, function(o, p)
-    local q = UL.clean(p.q, 32) or ''
-    q = UL.trim((q:gsub('[%%_]', '')))
-    local like = '%' .. q .. '%'
-    local rows = UL.DB.query([[SELECT member_id, name, callsign, dept, kind, UNIX_TIMESTAMP(last_seen) AS seen FROM ul_employees
-        WHERE name LIKE ? OR callsign LIKE ? OR dept LIKE ? ORDER BY dept, name LIMIT 150]], { like, like, like })
-    if not rows then return false, 'Database error.' end
-    local live = {}
-    for _, u in ipairs(onDuty()) do if u.id then live[u.id] = u end end
-    for _, r in ipairs(rows) do
-        local u = live[r.member_id]
-        r.onDuty = u ~= nil
-        local certs = nil
-        if r.kind == 'fire' then certs = UL.DB.scalar('SELECT certs FROM ul_fire_members WHERE member_id = ?', { r.member_id })
-        elseif r.kind == 'dot' then certs = UL.DB.scalar('SELECT certs FROM ul_dot_members WHERE member_id = ?', { r.member_id }) end
-        r.certs = UL.decode(certs, {})
-    end
-    return true, rows
-end)
-
-H('tools.profile', nil, function(o, p)
-    local id = UL.int(p.id)
-    if not id then return false, 'Pick an employee.' end
-    local e = UL.DB.single('SELECT member_id, name, callsign, dept, kind, UNIX_TIMESTAMP(last_seen) AS seen FROM ul_employees WHERE member_id = ?', { id })
-    if not e then return false, 'Employee not found.' end
-    -- activity of others: supervisors of that department only
-    if id == o.charId or (o.supervisor and e.dept == o.dept) then
-        e.activity = UL.DB.query('SELECT action, UNIX_TIMESTAMP(created_at) AS at FROM ul_activity WHERE member_id = ? ORDER BY id DESC LIMIT 40', { id }) or {}
-    end
-    return true, e
 end)

@@ -22,7 +22,7 @@
   const SEV = { MINOR: 'avail', MODERATE: 'enrt', SERIOUS: 'busy', CRITICAL: 'offdt', DECEASED: 'dim' };
 
   const S = { cfg: null, me: null, board: { incidents: [], units: [], apparatus: [] }, screen: 'cad', sel: null, open: null, data: null, tab: 'notes',
-    formKey: null, formPrefill: {}, sub: 'roster', patient: null, q: '', uq: '', typeFilter: '' };
+    formKey: null, formPrefill: {}, sub: 'stations', patient: null, q: '', uq: '', typeFilter: '' };
 
   /* ---------------- helpers ---------------- */
   let toastTimer;
@@ -398,9 +398,9 @@
     $$('#fHist tr[data-id]').forEach(r => r.onclick = () => openIncident(+r.dataset.id));
   }
 
-  /* ---------------- management ---------------- */
-  async function renderMgmt(sc) {
-    const tabs = [['roster', 'Personnel Roster'], ['stations', 'Fire Stations'], ['apparatus', 'Apparatus & Vehicles'], ['certs', 'Certifications']];
+  /* ---------------- station management: stations + apparatus ---------------- */
+  function renderMgmt(sc) {
+    const tabs = [['stations', 'Fire Stations'], ['apparatus', 'Apparatus & Vehicles']];
     const sup = S.me.supervisor;
     sc.innerHTML = `<div class="panel" style="flex:1"><div class="ftabs">${tabs.map(t => `<button class="${t[0] === S.sub ? 'on' : ''}" data-sub="${t[0]}">${t[1]}</button>`).join('')}<span class="hint" style="margin-left:auto;align-self:center;padding-right:8px">${sup ? 'Supervisor: you can edit' : 'Read only · supervisors can edit'}</span></div><div class="grid" id="fMgmt" style="border-top:1px solid var(--line-2)"><div class="empty">Loading...</div></div></div>`;
     $$('#fScreen [data-sub]').forEach(b => b.onclick = () => { S.sub = b.dataset.sub; renderMgmt(sc); });
@@ -411,37 +411,11 @@
         return `<tr><td><b>${esc(st.name)}</b></td><td>${esc(st.address)}</td><td>${apps.map(a => `<span class="uchip ${a.oos ? 'c-offdt' : a.crew.length ? 'c-avail' : ''}">${esc(a.id)}</span>`).join(' ')}</td><td>${crew}</td></tr>`; }).join('')}</tbody></table>`;
       return;
     }
-    if (S.sub === 'apparatus') {
-      el.innerHTML = `<table><thead><tr><th>Apparatus</th><th>Type</th><th>Station</th><th>Crew</th><th>Status</th><th></th></tr></thead><tbody>${S.board.apparatus.map(a =>
-        `<tr class="${a.oos ? 'c-offdt' : a.crew.length ? 'c-avail' : ''}"><td><b>${esc(a.id)}</b></td><td>${esc(a.type)}</td><td>${esc(a.station)}</td><td>${a.crew.map(esc).join(', ') || '-'}</td><td>${a.oos ? 'OUT OF SERVICE' : a.crew.length ? 'IN SERVICE' : 'AVAILABLE'}</td>
-        <td>${sup ? `<span class="lnk ${a.oos ? 'g' : 'r'}" data-oos="${esc(a.id)}" data-v="${a.oos ? 0 : 1}">${a.oos ? 'Return to service' : 'Out of service'}</span>` : ''}</td></tr>`).join('')}</tbody></table>
-        <div class="hint" style="padding:8px 12px">Units pick the apparatus they ride on in the status bar. Apparatus are set in config.lua (Config.Fire.apparatus).</div>`;
-      $$('#fMgmt [data-oos]').forEach(x => x.onclick = async () => { if (await call('fire.apparatusOOS', { id: x.dataset.oos, oos: x.dataset.v === '1' })) { await refresh(); renderMgmt(sc); } });
-      return;
-    }
-    const rows = await call('fire.roster'); if (!rows || S.screen !== 'mgmt') return;
-    if (S.sub === 'roster') {
-      el.innerHTML = `<table><thead><tr><th>Name</th><th>Callsign</th><th>Status</th><th>Apparatus</th><th>Certifications</th><th>Last Seen</th><th></th></tr></thead><tbody>${rows.map(r =>
-        `<tr class="${r.onDuty ? stCls(r.onDuty.status) : 'c-dim'}"><td><b>${esc(r.name)}</b></td><td>${esc(r.callsign || '')}</td><td>${r.onDuty ? 'ON DUTY · ' + r.onDuty.status : 'OFF DUTY'}</td><td>${esc((r.onDuty && r.onDuty.apparatus) || '-')}</td><td class="wrap">${esc((r.certs || []).join(', ') || '-')}</td><td>${d24(r.seen).slice(0, 10)}</td><td>${sup ? `<span class="lnk" data-m="${r.member_id}">Certifications</span>` : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">No members yet. Members are added the first time they open the SAFR CAD.</td></tr>'}</tbody></table>
-        <div class="hint" style="padding:8px 12px">Who can go on duty as SAFR, and who is a supervisor, is set with ACE permissions (unitlink.safr.duty / unitlink.safr.supervisor), not here.</div>`;
-      $$('#fMgmt [data-m]').forEach(x => x.onclick = () => certModal(rows.find(r => r.member_id === +x.dataset.m), () => renderMgmt(sc)));
-      return;
-    }
-    el.innerHTML = `<table><thead><tr><th>Name</th>${S.cfg.certifications.map(c => `<th style="text-align:center">${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r =>
-      `<tr><td><b>${esc(r.name)}</b></td>${S.cfg.certifications.map(c => `<td style="text-align:center" class="${sup ? 'click' : ''}" data-c="${r.member_id}|${esc(c)}">${(r.certs || []).includes(c) ? '<span style="color:var(--avail)">✔</span>' : '<span style="color:var(--dim)">-</span>'}</td>`).join('')}</tr>`).join('') || '<tr><td class="empty">No members yet</td></tr>'}</tbody></table>
-      ${sup ? '<div class="hint" style="padding:8px 12px">Click a cell to grant or remove a certification.</div>' : ''}`;
-    if (sup) $$('#fMgmt [data-c]').forEach(x => x.onclick = async () => {
-      const [mid, c] = x.dataset.c.split('|'); const r = rows.find(z => z.member_id === +mid);
-      const certs = (r.certs || []).includes(c) ? r.certs.filter(z => z !== c) : [...(r.certs || []), c];
-      if (await call('fire.setCerts', { member: +mid, certs })) renderMgmt(sc);
-    });
-  }
-  function certModal(r, done) {
-    modal(`Certifications · ${r.name}`, `<div class="xchecks">${S.cfg.certifications.map(c => `<label><input type="checkbox" value="${esc(c)}" ${(r.certs || []).includes(c) ? 'checked' : ''}> ${esc(c)}</label>`).join('')}</div>`,
-      [{ label: 'Cancel', cls: 'gray' }, { label: 'Save', cls: 'green', run: async () => {
-        const certs = $$('#fmBody .xchecks input:checked').map(i => i.value);
-        if (!(await call('fire.setCerts', { member: r.member_id, certs }, 'Certifications saved'))) return false; done();
-      } }]);
+    el.innerHTML = `<table><thead><tr><th>Apparatus</th><th>Type</th><th>Station</th><th>Crew</th><th>Status</th><th></th></tr></thead><tbody>${S.board.apparatus.map(a =>
+      `<tr class="${a.oos ? 'c-offdt' : a.crew.length ? 'c-avail' : ''}"><td><b>${esc(a.id)}</b></td><td>${esc(a.type)}</td><td>${esc(a.station)}</td><td>${a.crew.map(esc).join(', ') || '-'}</td><td>${a.oos ? 'OUT OF SERVICE' : a.crew.length ? 'IN SERVICE' : 'AVAILABLE'}</td>
+      <td>${sup ? `<span class="lnk ${a.oos ? 'g' : 'r'}" data-oos="${esc(a.id)}" data-v="${a.oos ? 0 : 1}">${a.oos ? 'Return to service' : 'Out of service'}</span>` : ''}</td></tr>`).join('')}</tbody></table>
+      <div class="hint" style="padding:8px 12px">Units pick the apparatus they ride on in the status bar. Apparatus are set in config.lua (Config.Fire.apparatus).</div>`;
+    $$('#fMgmt [data-oos]').forEach(x => x.onclick = async () => { if (await call('fire.apparatusOOS', { id: x.dataset.oos, oos: x.dataset.v === '1' })) { await refresh(); renderMgmt(sc); } });
   }
 
   /* ---------------- lifecycle ---------------- */

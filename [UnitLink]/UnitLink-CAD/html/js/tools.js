@@ -9,14 +9,14 @@ window.ULTools = (() => {
   const I = {
     search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', msg:'<path d="M4 5h16v11H8l-4 4z"/>', bolo:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.1"/>',
     link:'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>',
-    act:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', people:'<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0M16 4a3 3 0 010 6M21 20a6 6 0 00-4-5.6"/>',
+    act:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   };
   const svg = (n, c) => `<svg viewBox="0 0 24 24" ${c ? `style="--ic:${c}"` : ''}>${I[n]}</svg>`;
   const TILES = [['search', 'Global Search', '#ffd257', 'search'], ['messages', 'Messages', '#fff', 'msg'], ['bolos', 'BOLOs', '#ff6b6b', 'bolo'],
-    ['links', 'Incident Links', '#9cc3ff', 'link'], ['activity', 'Activity', '#9cc3ff', 'act'], ['profiles', 'Employees', '#3ee06a', 'people']];
+    ['links', 'Incident Links', '#9cc3ff', 'link'], ['activity', 'Activity', '#9cc3ff', 'act']];
   const TYPE_LABEL = { call: 'Police Call', fire: 'SAFR Incident', dot: 'DOT Work Order' };
   const PREFIX = { call: '#', fire: 'F-', dot: 'WO-' };
-  const S = { on: false, screen: 'search', info: null, me: null, kind: null, onChange: null, unread: 0, q: '', results: null, actScope: 'me', pq: '', linkType: 'call', linkId: '' };
+  const S = { on: false, screen: 'search', info: null, me: null, kind: null, onChange: null, unread: 0, q: '', results: null, actScope: 'me', linkType: 'call', linkId: '' };
 
   document.body.insertAdjacentHTML('beforeend', `<div id="tools"><div class="win">
     <div class="menubar"><span>File</span><span>View</span><span>Help</span><span class="title" id="tTitle">Tools</span><span class="brand">UNITLINK · TOOLS</span><span class="x" id="tClose" title="Close (Esc)">✕ Close</span></div>
@@ -52,7 +52,7 @@ window.ULTools = (() => {
     S.screen = screen;
     if (screen === 'messages') { S.unread = 0; if (S.onChange) S.onChange(); }
     const sc = $('#tScreen'); sc.className = 'fscreen tools-' + screen;
-    ({ search: renderSearch, messages: renderMessages, bolos: renderBolos, links: renderLinks, activity: renderActivity, profiles: renderProfiles })[screen](sc);
+    ({ search: renderSearch, messages: renderMessages, bolos: renderBolos, links: renderLinks, activity: renderActivity })[screen](sc);
     chrome();
   }
   const table = (head, rows, empty, cls = '') => `<table class="${cls}"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('') || `<tr><td colspan="${head.length}" class="empty">${empty}</td></tr>`}</tbody></table>`;
@@ -136,23 +136,6 @@ window.ULTools = (() => {
     $$('#tScreen [data-sc]').forEach(b => b.onclick = () => { S.actScope = b.dataset.sc; renderActivity(sc); });
     const rows = await call('tools.activity', { scope: S.actScope }); if (!rows || S.screen !== 'activity') return;
     $('#tAct').innerHTML = table(['Time', 'Employee', 'Unit', 'Dept', 'Action'], rows.map(a => `<tr><td>${d24(a.at)}</td><td>${esc(a.name)}</td><td>${esc(a.callsign || '')}</td><td>${esc(a.dept || '')}</td><td class="wrap">${esc(a.action)}</td></tr>`), 'No activity yet');
-  }
-
-  /* ---- employee profiles ---- */
-  async function renderProfiles(sc) {
-    sc.innerHTML = `<div class="panel main"><div class="phead"><h2>Employees</h2><div class="tools"><div class="pill">${svg('search')}<input id="tPq" placeholder="Name, callsign, dept..." value="${esc(S.pq)}"></div></div></div><div class="grid" id="tProf"><div class="empty">Loading...</div></div></div>
-      <div class="panel side"><div class="phead"><h2>Profile</h2></div><div class="ret" id="tProfile"><span class="w">Pick an employee.</span></div></div>`;
-    let t; $('#tPq').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.pq = e.target.value; loadProfiles(); }, 250); };
-    loadProfiles();
-  }
-  async function loadProfiles() {
-    const rows = await call('tools.profiles', { q: S.pq }); if (!rows || S.screen !== 'profiles') return;
-    $('#tProf').innerHTML = table(['Name', 'Callsign', 'Dept', 'Certifications', 'Status', 'Last Seen'], rows.map(r => `<tr class="click ${r.onDuty ? 'c-avail' : 'c-dim'}" data-p="${r.member_id}"><td><b>${esc(r.name)}</b></td><td>${esc(r.callsign || '')}</td><td>${esc(r.dept || '')}</td><td class="wrap">${esc((r.certs || []).join(', ') || '-')}</td><td>${r.onDuty ? 'ON DUTY' : 'OFF DUTY'}</td><td>${d24(r.seen)}</td></tr>`), 'Nobody yet. Employees are added the first time they open a tablet.');
-    $$('#tProf [data-p]').forEach(tr => tr.onclick = async () => {
-      const e = await call('tools.profile', { id: +tr.dataset.p }); if (!e) return;
-      $('#tProfile').innerHTML = `<div class="sect" style="padding-left:0">${esc(e.name)}</div><dl class="kvtab"><dt>Callsign</dt><dd>${esc(e.callsign || '')}</dd><dt>Department</dt><dd>${esc(e.dept || '')}</dd><dt>Tablet</dt><dd>${esc({ leo: 'Police CAD', fire: 'SAFR CAD', dot: 'DOT Work Orders' }[e.kind] || e.kind || '')}</dd><dt>Last Seen</dt><dd>${d24(e.seen)}</dd></dl>` +
-        (e.activity ? `<div class="sect" style="padding-left:0">RECENT ACTIVITY</div>${e.activity.map(a => `<div class="hint">${d24(a.at)} · ${esc(a.action)}</div>`).join('') || '<div class="hint">None</div>'}` : '<div class="hint" style="margin-top:10px">Activity is visible to the employee and their department supervisors.</div>');
-    });
   }
 
   /* ---- lifecycle ---- */

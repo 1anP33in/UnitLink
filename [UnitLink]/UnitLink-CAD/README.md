@@ -42,7 +42,7 @@ ensure UnitLink-CAD
 | **Call record** | Nature, priority (editable), address, city, county, caller and units. Buttons for Assign Self / ENRT / ARRVD / Clear Self, GPS, and close. Tabs: **Notes** (live, timestamped, with system entries for attaches, status and edits), **Info**, **State Returns** run on the call, and **Address History** (closed calls within 60 m). |
 | **New Call** | Self-initiated call at your position. You're attached automatically and no popup goes to other units. |
 | **Civilian Portal (`/civ`)** | Anyone. Profiles (up to 5), dashboard, 911 with call tracking, records and fines, vehicles, applications, DOT service requests. |
-| **Tools** | On every department tablet: global search, messages, shared BOLOs, incident links, activity, employee profiles. |
+| **Tools** | On every department tablet: global search, messages, shared BOLOs, incident links, activity. |
 | **Search → State Return** | Name or character ID. The return shows licenses and points, active warrants (red WANTED banner), alerts, and history. Buttons go straight to Citation / Arrest / Report / Warrant / Add Alert. |
 | **Returns** | Every name you ran in the last 12 hours. |
 | **Forms** | Citation, Arrest Report, Incident Report, Warrant Request. Charges come from the code list (searchable by code, name or abbreviation like "dui"). Click any of your records to read it back. |
@@ -103,7 +103,7 @@ The preview also has **mockups** of what UnitLink could grow into. None of these
 - **DOT work orders:** jobs, fleet, equipment, road closures and road alerts.
 - **Civilian portal:** dashboard, 911 with live tracking, records, applications and service requests.
 - **Admin dashboard:** departments, sub-departments, ranks and permissions, employees, system settings and audit history.
-- **Shared tools:** global search, unit messaging, BOLOs, incident linking, activity log and employee profiles.
+- **Shared tools:** global search, unit messaging, BOLOs, incident linking and activity log.
 
 Every screen uses this tablet's style. Switch between them with the box in the menu bar.
 

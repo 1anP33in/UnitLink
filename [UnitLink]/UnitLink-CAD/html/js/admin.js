@@ -70,7 +70,7 @@
     const o = A.cfg.overview;
     sc.innerHTML = `<div class="panel" style="flex:1"><div class="phead"><h2>Departments</h2><span class="sub">Read only · set in UnitLink-Police config/departments.lua and config/permissions.lua</span></div>
       <div class="grid">${table(['Key', 'Short', 'Name', 'Type', 'Callsign Example', 'Duty ACE', 'Supervisor ACE', 'On Duty'], o.departments.map(d => `<tr class="${d.onDuty ? 'c-avail' : ''}"><td>${esc(d.key)}</td><td><b>${esc(d.short)}</b></td><td>${esc(d.name)}</td><td>${esc(String(d.type).toUpperCase())}</td><td>${esc(d.callsignExample || '')}</td><td><code>${esc(d.duty || '')}</code></td><td><code>${esc(d.supervisor || '')}</code></td><td>${d.onDuty}</td></tr>`), 'UnitLink-Police is not running')}</div>
-      <div class="hint" style="padding:8px 12px">To let someone go on duty, give them the duty ACE in server.cfg (see aceperms.md). Supervisor ACE unlocks approvals, announcements and certifications.</div></div>`;
+      <div class="hint" style="padding:8px 12px">To let someone go on duty, give them the duty ACE in server.cfg (see aceperms.md). Supervisor ACE unlocks approvals and announcements.</div></div>`;
   }
 
   /* ---- applications ---- */

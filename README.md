@@ -106,7 +106,7 @@ Every screen uses the same look as the Police CAD: blue toolbar of tile buttons,
 ### SAFR: Fire & Rescue CAD
 - **Board:** live incidents and apparatus. Unit statuses are Available, En Route, On Scene, Transporting, At Hospital, Busy and Out of Service.
 - **Incidents and patients:** call type, priority, caller, apparatus, patient records and each person's medical history.
-- **Reports, alerts, MAYDAY, mutual aid, station management** (roster, apparatus, certifications).
+- **Reports, alerts, MAYDAY, mutual aid, station management** (stations, apparatus out of service).
 
 ### DOT: Work Orders
 - **Job board** with filters, **work orders** (WO-5001 and up) with equipment, crew, status and completion notes.
@@ -123,7 +123,7 @@ Every screen uses the same look as the Police CAD: blue toolbar of tile buttons,
 - Overview, departments and permissions (**read only**), the applications queue, civilian licenses and vehicles, **laws & fines**, settings, activity and an **audit log** of every change.
 
 ### Shared Tools (every department tablet)
-Global search, messages to all units / a department / one unit, shared BOLOs, incident links across departments, activity logs and employee profiles.
+Global search, messages to all units / a department / one unit, shared BOLOs, incident links across departments, and activity logs.
 
 ## Ideas for later
 

@@ -52,7 +52,7 @@ Config.Civ = {
 
 ---------------------------------------------------------------------
 -- Shared tools (every department tablet has a Tools tile):
--- global search, messages, shared BOLOs, incident links, activity, profiles
+-- global search, messages, shared BOLOs, incident links, activity
 ---------------------------------------------------------------------
 Config.Tools = {
     enabled = true,
@@ -126,7 +126,6 @@ Config.Fire = {
         { id = 'M-4', type = 'MEDIC', station = 'STATION 7' },   { id = 'BR-2', type = 'BRUSH', station = 'STATION 7' },
         { id = 'E-21', type = 'ENGINE', station = 'STATION 9' }, { id = 'R-9', type = 'RESCUE', station = 'STATION 9' },
     },
-    certifications = { 'FF I', 'FF II', 'EMT', 'Paramedic', 'Driver/Operator', 'Hazmat Ops', 'Rescue Tech' },
     mutualAidTo = { 'SASP', 'BCSO', 'LSP', 'DOT' },
     nearbyMeters = 60,              -- Address History radius
     maydayAll = true,               -- MAYDAY alerts every on-duty unit (false = SAFR only)
@@ -217,7 +216,6 @@ Config.Dot = {
     },
     closureReasons = { 'CONSTRUCTION', 'COLLISION', 'EVENT', 'HAZARD', 'EMERGENCY' },
     directions = { 'BOTH', 'NORTHBOUND', 'SOUTHBOUND', 'EASTBOUND', 'WESTBOUND' },
-    certifications = { 'CDL-A', 'CDL-B', 'Flagger', 'Work Zone Safety', 'Heavy Recovery', 'Signal Tech' },
     nearbyMeters = 60,
     minNarrative = 20,              -- reports and completion notes
     requestCooldown = 120,          -- seconds between civilian service requests per player

@@ -183,16 +183,6 @@ CREATE TABLE IF NOT EXISTS `ul_fire_reports` (
     KEY `idx_ul_fire_rep_subject` (`subject_char`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- everyone who has gone on duty with SAFR (roster + certifications)
-CREATE TABLE IF NOT EXISTS `ul_fire_members` (
-    `member_id` BIGINT UNSIGNED NOT NULL,     -- officer id (account in standalone mode)
-    `name` VARCHAR(64) NOT NULL,
-    `callsign` VARCHAR(12) NULL,
-    `certs` VARCHAR(255) NULL,                -- JSON list
-    `last_seen` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`member_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ul_fire_mutual_aid` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `from_station` VARCHAR(32) NOT NULL,
@@ -213,7 +203,7 @@ CREATE TABLE IF NOT EXISTS `ul_fire_announcements` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Shared: activity log, employees (profiles), admin audit ---------------------
+-- Shared: activity log, employees, admin audit ---------------------
 CREATE TABLE IF NOT EXISTS `ul_activity` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `member_id` BIGINT UNSIGNED NOT NULL,
@@ -294,15 +284,6 @@ CREATE TABLE IF NOT EXISTS `ul_dot_reports` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_ul_dot_rep_author` (`author_char`, `id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `ul_dot_members` (
-    `member_id` BIGINT UNSIGNED NOT NULL,
-    `name` VARCHAR(64) NOT NULL,
-    `callsign` VARCHAR(12) NULL,
-    `certs` VARCHAR(255) NULL,
-    `last_seen` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`member_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- vehicle state (the list of vehicles is Config.Dot.fleet)

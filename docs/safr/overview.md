@@ -17,7 +17,7 @@ The **SAFR (San Andreas Fire & Rescue) CAD** is UnitLink's fire and EMS tablet. 
 | **Patients** | Patient records and medical history. See [Incidents & Patients](incidents-and-patients.md) |
 | **Reports** | The 6 SAFR reports. See [Reports](reports.md) |
 | **Alerts** | Medical, fire and rescue calls, mutual aid, announcements, MAYDAY. See [Alerts & MAYDAY](alerts-and-mayday.md) |
-| **Station Mgmt** | Roster, stations, apparatus, certifications. See [Station Management](station-management.md) |
+| **Station Mgmt** | Stations and apparatus. See [Station Management](station-management.md) |
 | **History** | The last 100 closed incidents |
 | **New Incident** | A self-initiated incident at your position |
 | **Assign Self** | Attaches you to the selected incident |

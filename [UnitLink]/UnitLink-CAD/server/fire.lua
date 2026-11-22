@@ -229,14 +229,12 @@ AddEventHandler('playerDropped', function() Fire.viewers[source] = nil end)
 function Fire.open(o)
     Fire.viewers[o.src] = true
     local s = unitState(o.src)
-    UL.DB.query([[INSERT INTO ul_fire_members (member_id, name, callsign, last_seen) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-        ON DUPLICATE KEY UPDATE name = VALUES(name), callsign = VALUES(callsign), last_seen = CURRENT_TIMESTAMP]], { o.charId, o.name:sub(1, 64), o.callsign })
     local forms = UL.formsForUi(F.forms, LISTS)
     return true, {
         kind = 'fire', name = Config.Name,
         me = { src = o.src, callsign = o.callsign, short = o.short, name = o.name, dept = o.dept, supervisor = o.supervisor, apparatus = s.apparatus },
         statuses = F.statuses, types = F.types, typeOrder = F.typeOrder, dispositions = F.dispositions, hospitals = F.hospitals,
-        severities = F.severities, conditions = F.conditions, stations = F.stations, certifications = F.certifications,
+        severities = F.severities, conditions = F.conditions, stations = F.stations,
         mutualAidTo = F.mutualAidTo, forms = forms, minNarrative = F.minNarrative, board = Fire.board(),
     }
 end
@@ -573,33 +571,8 @@ H('fire.maydayClear', nil, function(o)
 end)
 
 ---------------------------------------------------------------------
--- Management: roster, certifications, apparatus
+-- Management: apparatus
 ---------------------------------------------------------------------
-H('fire.roster', nil, function()
-    local rows = UL.DB.query('SELECT member_id, name, callsign, certs, UNIX_TIMESTAMP(last_seen) AS seen FROM ul_fire_members ORDER BY name LIMIT 200') or {}
-    local onDuty = {}
-    for _, u in ipairs(fireUnits()) do
-        local id = Identity.officerId(u.source)
-        if id then onDuty[id] = u end
-    end
-    for _, r in ipairs(rows) do
-        r.certs = UL.decode(r.certs, {})
-        local u = onDuty[r.member_id]
-        if u then r.onDuty = { callsign = u.callsign, status = u.status, apparatus = u.apparatus } end
-    end
-    return true, rows
-end)
-
-H('fire.setCerts', { supervisor = true }, function(o, p)
-    local id = UL.int(p.member)
-    if not id then return false, 'Pick a member.' end
-    local certs = {}
-    for _, c in ipairs(type(p.certs) == 'table' and p.certs or {}) do if inList(F.certifications, c) then certs[#certs + 1] = c end end
-    local n = UL.DB.update('UPDATE ul_fire_members SET certs = ? WHERE member_id = ?', { UL.json(certs), id }) or 0
-    if n == 0 then return false, 'Member not found.' end
-    return true
-end)
-
 H('fire.apparatusOOS', { supervisor = true }, function(o, p)
     local id = p.id
     if not APPARATUS[id] then return false, 'Unknown apparatus.' end

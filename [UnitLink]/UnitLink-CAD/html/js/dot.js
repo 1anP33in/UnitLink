@@ -19,7 +19,7 @@
   const svg = (n, c) => `<svg viewBox="0 0 24 24" ${c ? `style="--ic:${c}"` : ''}>${I[n]}</svg>`;
 
   const S = { cfg: null, me: null, board: { orders: [], units: [] }, screen: 'cad', sel: null, open: null, data: null, tab: 'notes',
-    formKey: null, formPrefill: {}, sub: 'roster', fsub: 'vehicles', q: '', uq: '', filter: '' };
+    formKey: null, formPrefill: {}, fsub: 'vehicles', q: '', uq: '', filter: '' };
   let toastTimer;
   const toast = (msg, err) => { const t = $('#dToast'); t.textContent = msg; t.className = 'toast on' + (err ? ' err' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = 'toast', 2800); };
   async function call(action, payload, okMsg) {
@@ -47,7 +47,7 @@
   /* ---------------- chrome ---------------- */
   const TILES = [
     ['cad', 'Job Board', '#fff', 'cad'], ['mycall', 'My Job', '#cbd5e1', 'star'], ['fleet', 'Fleet & Equip', '#ffd257', 'truck'], ['forms', 'Reports', '#fff', 'forms'],
-    ['alerts', 'Road Alerts', '#ff6b6b', 'alert'], ['mgmt', 'Crew Roster', '#9cc3ff', 'station'], ['history', 'History', '#9cc3ff', 'history'], ['|'],
+    ['alerts', 'Road Alerts', '#ff6b6b', 'alert'], ['history', 'History', '#9cc3ff', 'history'], ['|'],
     ['newcall', 'New Job', '#3ee06a', 'phone'], ['assign', 'Assign Self', '#3ee06a', 'phone'], ['|'], ['tools', 'Tools', '#ffd257', 'tools'], ['announce', 'Announce', '#ffd257', 'mega'],
   ];
   function tileOff(t) {
@@ -67,13 +67,13 @@
     $('#dsCall').textContent = myOrders().length ? `Active Job: ${myOrders().map(i => 'WO-' + i).join(', ')}` : 'No Active Job';
     $('#dsUnit').textContent = `${S.me.callsign} · ${S.me.short} · ${S.me.dept}${S.me.supervisor ? ' · SUPERVISOR' : ''}`;
   }
-  const TITLES = { cad: 'DOT · Job Board', fleet: 'DOT · Fleet & Equipment', forms: 'DOT · Reports', alerts: 'DOT · Road Alerts', mgmt: 'DOT · Crew Roster', history: 'DOT · Completed Work Orders' };
+  const TITLES = { cad: 'DOT · Job Board', fleet: 'DOT · Fleet & Equipment', forms: 'DOT · Reports', alerts: 'DOT · Road Alerts', history: 'DOT · Completed Work Orders' };
   function show(screen) {
     S.screen = screen;
     const sc = $('#dScreen'); sc.className = 'fscreen ' + screen;
     const c = S.data && (S.data.order || S.data.closed);
     $('#dTitle').textContent = screen === 'call' && c ? `WO-${c.id} - ${c.category}` : TITLES[screen];
-    ({ cad: renderBoard, call: renderOrder, fleet: renderFleet, forms: renderForms, alerts: renderAlerts, mgmt: renderMgmt, history: renderHistory })[screen](sc);
+    ({ cad: renderBoard, call: renderOrder, fleet: renderFleet, forms: renderForms, alerts: renderAlerts, history: renderHistory })[screen](sc);
     chrome();
   }
   async function action(t) {
@@ -325,30 +325,6 @@
     historyCache = rows.slice(0, 25);
     $('#dHist').innerHTML = rows.map(h => `<tr class="click ${h.priority === 1 ? 'c-p1' : 'c-avail'}" data-id="${h.id}"><td>WO-${h.id}</td><td>${esc(h.category)}</td><td>${h.priority}</td><td>${esc(h.street || '')}</td><td>${esc(h.requester || '')}</td><td>${esc(h.units || '')}</td><td>${d24(h.createdAt)}</td><td>${h.closedAt ? d24(h.closedAt) : ''}</td><td>${esc(h.disposition || '')}</td></tr>`).join('') || '<tr><td colspan="9" class="empty">Nothing completed yet</td></tr>';
     $$('#dHist tr[data-id]').forEach(r => r.onclick = () => openOrder(+r.dataset.id));
-  }
-
-  /* ---------------- crew roster ---------------- */
-  async function renderMgmt(sc) {
-    const tabs = [['roster', 'Crew Roster'], ['certs', 'Certifications']];
-    const sup = S.me.supervisor;
-    sc.innerHTML = `<div class="panel" style="flex:1"><div class="ftabs">${tabs.map(t => `<button class="${t[0] === S.sub ? 'on' : ''}" data-sub="${t[0]}">${t[1]}</button>`).join('')}<span class="hint" style="margin-left:auto;align-self:center;padding-right:8px">${sup ? 'Supervisor: you can edit' : 'Read only · supervisors can edit'}</span></div><div class="grid" id="dMgmt" style="border-top:1px solid var(--line-2)"><div class="empty">Loading...</div></div></div>`;
-    $$('#dScreen [data-sub]').forEach(b => b.onclick = () => { S.sub = b.dataset.sub; renderMgmt(sc); });
-    const rows = await call('dot.roster'); if (!rows || S.screen !== 'mgmt') return;
-    const el = $('#dMgmt');
-    if (S.sub === 'roster') {
-      el.innerHTML = `<table><thead><tr><th>Name</th><th>Callsign</th><th>Status</th><th>Vehicle</th><th>Certifications</th><th>Last Seen</th></tr></thead><tbody>${rows.map(r =>
-        `<tr class="${r.onDuty ? stCls(r.onDuty.status) : 'c-dim'}"><td><b>${esc(r.name)}</b></td><td>${esc(r.callsign || '')}</td><td>${r.onDuty ? 'ON DUTY · ' + r.onDuty.status : 'OFF DUTY'}</td><td>${esc((r.onDuty && r.onDuty.vehicle) || '-')}</td><td class="wrap">${esc((r.certs || []).join(', ') || '-')}</td><td>${d24(r.seen).slice(0, 10)}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">No members yet. Members are added the first time they open the DOT CAD.</td></tr>'}</tbody></table>
-        <div class="hint" style="padding:8px 12px">Who can go on duty as DOT, and who is a supervisor, is set with ACE permissions (unitlink.dot.duty / unitlink.dot.supervisor).</div>`;
-      return;
-    }
-    el.innerHTML = `<table><thead><tr><th>Name</th>${S.cfg.certifications.map(c => `<th style="text-align:center">${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r =>
-      `<tr><td><b>${esc(r.name)}</b></td>${S.cfg.certifications.map(c => `<td style="text-align:center" class="${sup ? 'click' : ''}" data-c="${r.member_id}|${esc(c)}">${(r.certs || []).includes(c) ? '<span style="color:var(--avail)">✔</span>' : '<span style="color:var(--dim)">-</span>'}</td>`).join('')}</tr>`).join('') || '<tr><td class="empty">No members yet</td></tr>'}</tbody></table>
-      ${sup ? '<div class="hint" style="padding:8px 12px">Click a cell to grant or remove a certification.</div>' : ''}`;
-    if (sup) $$('#dMgmt [data-c]').forEach(x => x.onclick = async () => {
-      const [mid, c] = x.dataset.c.split('|'); const r = rows.find(z => z.member_id === +mid);
-      const certs = (r.certs || []).includes(c) ? r.certs.filter(z => z !== c) : [...(r.certs || []), c];
-      if (await call('dot.setCerts', { member: +mid, certs })) renderMgmt(sc);
-    });
   }
 
   /* ---------------- lifecycle ---------------- */

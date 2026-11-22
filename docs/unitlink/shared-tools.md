@@ -9,7 +9,6 @@ Every department tablet (police, SAFR and DOT) has a **Tools** button. It opens 
 | **BOLOs** | Shared BOLOs every department sees. Types are in `Config.Tools.boloTypes`. Civilians who report their car stolen add one automatically |
 | **Incident Links** | Tie a police call (`#`), a SAFR incident (`F-`) and a DOT work order (`WO-`) together. Click a result in Global Search to jump here |
 | **Activity** | Your own actions. Supervisors also see their whole department |
-| **Employees** | Everyone who has opened a tablet: department, callsign, certifications, on or off duty. Activity is shown to the person and their department's supervisors |
 
 {% hint style="info" %}
 Police alerts (Alerts screen in the police CAD) stay police-only. Shared BOLOs are the cross-department board.

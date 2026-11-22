@@ -30,7 +30,7 @@ add_principal group.sasp_supervisor group.sasp                  # supervisors ca
 
 ## ---------- Example 2: Fire & Rescue (SAFR) ----------
 add_ace group.safr unitlink.safr.duty allow                     # SAFR tablet with /cad
-add_ace group.safr_supervisor unitlink.safr.supervisor allow    # announcements, certifications, MAYDAY clear
+add_ace group.safr_supervisor unitlink.safr.supervisor allow    # announcements, apparatus out of service, MAYDAY clear
 add_principal group.safr_supervisor group.safr
 
 ## ---------- Example 3: the UnitLink Admin Dashboard (/cadadmin) ----------
