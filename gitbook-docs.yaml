@@ -1,6 +1,17 @@
-# GitBook Git Sync: the documentation lives in docs/
-root: ./docs/
-
-structure:
-  readme: README.md
-  summary: SUMMARY.md
+# GitBook Git Sync, site level: maps this repo onto the "UnitLink Cad" GitBook site.
+# One space, read from docs/. How that space is read lives in docs/.gitbook.yaml.
+#
+# `key` is how GitBook recognises the space between syncs. Treat it as permanent:
+# changing it replaces the space. Rename with `title`, change the URL with `path`.
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: UnitLink Cad
+  structure:
+    - type: space
+      key: unitlink-docs
+      title: Docs
+      path: docs
+      default: true
+      content:
+        directory: ./docs
+        language: en
