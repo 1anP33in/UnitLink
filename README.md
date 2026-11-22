@@ -15,11 +15,46 @@ UnitLink is the in-game CAD / MDT tablet for **Tropical State RP**, together wit
 
 Notes, call history, records, warrants, BOLOs and state returns are kept in UnitLink's own `ul_*` MySQL tables, through **oxmysql**. oxmysql isn't in this repo; get it from its official release.
 
-Each resource has its own README with the full details.
+Each resource has its own README with the full details. The full documentation, ready to import into GitBook, is in [`docs/`](docs).
+
+## Download
+
+This repo is **private**. Your GitHub account needs access to it, and Git needs to be signed in. The easiest way to sign in is the GitHub CLI (`gh auth login`); a personal access token also works when Git asks for a password.
+
+**Option A: git clone (recommended, easy to update)**
+
+```bash
+git clone https://github.com/1anP33in/tsrp-unitlink-cad.git
+```
+
+This creates a `tsrp-unitlink-cad` folder holding the `[Category]` folders. Copy those into your server's `resources` folder.
+
+To get the newest version later:
+
+```bash
+cd tsrp-unitlink-cad
+git pull
+```
+
+Then copy the folders over again.
+
+**Option B: clone straight into a new server's resources folder**
+
+For a fresh server that has no `resources` folder yet, run this from the server's base folder (the one that holds `server.cfg`):
+
+```bash
+git clone https://github.com/1anP33in/tsrp-unitlink-cad.git resources
+```
+
+After that, `git pull` inside `resources` updates the scripts in place. The repo's `.gitignore` only tracks these scripts, so any other resources you add aren't affected.
+
+**Option C: ZIP download**
+
+On GitHub, click **Code → Download ZIP**, extract it, and copy the `[Category]` folders into `resources`.
 
 ## Install
 
-1. Copy the folders into your server's `resources` folder, keeping the `[Category]` folders.
+1. Put the folders in your server's `resources` folder, keeping the `[Category]` folders (see **Download**).
 2. In `server.cfg`, in this order:
 
 ```cfg

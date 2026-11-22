@@ -3,6 +3,8 @@
 /*
 !/.gitignore
 !/README.md
+!/.gitbook.yaml
+!/docs/
 
 !/[[]Tropical_PoliceScripts]/
 /[[]Tropical_PoliceScripts]/*
