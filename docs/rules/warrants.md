@@ -16,8 +16,8 @@ A warrant filed **by a supervisor** goes active right away.
 
 ## Who counts as a supervisor
 
-tsrp-police decides. A supervisor has either:
-* `tsrp.<dept>.supervisor` (for example `tsrp.sasp.supervisor`), or
-* `tsrp.police.supervisor`, which covers every LEO department.
+UnitLink-Police decides. A supervisor has either:
+* `unitlink.<dept>.supervisor` (for example `unitlink.sasp.supervisor`), or
+* `unitlink.police.supervisor`, which covers every LEO department.
 
 See [Permissions & Access](permissions.md).

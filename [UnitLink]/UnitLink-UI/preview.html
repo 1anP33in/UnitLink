@@ -1,0 +1,1653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UnitLink UI Preview</title>
+<!-- Browser preview only. Runs the real NUI files with a fake Lua side. Rebuild with tools/build-preview.sh -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap');
+
+/* ================= tokens ================= */
+:root{
+  --card:rgba(11,17,28,.9);
+  --card-b:rgba(255,255,255,.07);
+  --muted:rgba(255,255,255,.62);
+  --dim:rgba(255,255,255,.4);
+  --line:rgba(255,255,255,.07);
+  --field:rgba(255,255,255,.05);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --accent:45,212,191; --ok:34,195,138; --bad:239,75,90; --warn:245,165,36; --purple:167,123,243;
+  --scale:1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:transparent;font-family:"Inter","Segoe UI",system-ui,sans-serif;color:#fff;user-select:none;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+#ui{transition:opacity .25s}
+#ui.hidden{opacity:0;pointer-events:none}
+#ui>div{position:fixed;zoom:var(--scale)}
+
+/* show / hide for single-instance components */
+#textui,#list,#context,#progress,#radial,#minigame,#modal{display:none}
+#textui.show,#list.show,#context.show,#progress.show,#radial.show,#minigame.show,#modal.show{display:block}
+.show>*{animation:popIn .22s cubic-bezier(.2,.9,.25,1.1) backwards}
+.out>*{animation:popOut .18s ease forwards}
+@keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}}
+@keyframes popOut{to{opacity:0;transform:translateY(6px) scale(.98)}}
+
+/* ================= shared pieces ================= */
+.card{
+  --rgb:var(--accent);
+  position:relative;overflow:hidden;color:#fff;
+  background:var(--card);border:1px solid var(--card-b);border-radius:16px;box-shadow:var(--shadow);
+}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(150px 100px at 0 0,rgba(var(--rgb),.2),transparent 70%)}
+.card>*{position:relative}
+.ic{position:relative;flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+  background:rgba(var(--rgb),.18);box-shadow:inset 0 0 0 1px rgba(var(--rgb),.35)}
+.ic.sm{width:32px;height:32px;border-radius:10px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic svg.i{color:rgb(var(--rgb))}
+.ic.sm svg.i{width:16px;height:16px}
+.tt{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.sub{font-weight:500;font-size:13px;color:var(--muted);line-height:1.4}
+.sub:empty{display:none}
+.key{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:6px;
+  background:rgba(255,255,255,.12);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35);
+  font-weight:800;font-size:11.5px;color:#fff;flex:none}
+.key.ac{background:rgb(var(--rgb));color:#0b111c;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.hints{display:flex;flex-wrap:wrap;gap:12px;font-weight:600;font-size:12px;color:var(--dim)}
+.hints span{display:inline-flex;align-items:center;gap:6px}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;font-size:13.5px;cursor:pointer;transition:filter .15s,background .15s}
+.btn.solid{background:rgb(var(--rgb));color:#0b111c}
+.btn.solid:hover{filter:brightness(1.1)}
+.btn.ghost{background:rgba(255,255,255,.07);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+.mbar{height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.mbar i{display:block;height:100%;border-radius:4px;background:rgb(var(--rgb))}
+b{font-weight:700;color:#fff}
+
+/* ================= notifications ================= */
+#notify{
+  --ox:24px;--oy:24px;
+  z-index:10;width:360px;max-width:calc(100vw - 32px);display:flex;flex-direction:column;pointer-events:none;
+}
+#notify.pos-top-right   {top:var(--oy);right:var(--ox);--ex:44px;--ey:0px}
+#notify.pos-top-left    {top:var(--oy);left:var(--ox);--ex:-44px;--ey:0px}
+#notify.pos-bottom-right{bottom:var(--oy);right:var(--ox);--ex:44px;--ey:0px}
+#notify.pos-bottom-left {bottom:var(--oy);left:var(--ox);--ex:-44px;--ey:0px}
+#notify.pos-center-top  {top:var(--oy);left:50%;transform:translateX(-50%);--ex:0px;--ey:-28px}
+.slot{padding:5px 0;transition:height .3s ease,padding .3s ease}
+.slot.out{height:0!important;padding:0}
+.n{
+  --rgb:59,167,255;
+  position:relative;overflow:hidden;
+  display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;
+  padding:14px 16px 16px 14px;
+  background:var(--card);border:1px solid var(--card-b);border-radius:16px;box-shadow:var(--shadow);
+  animation:nIn .45s cubic-bezier(.2,.9,.25,1.15) backwards;
+  transition:opacity .25s ease,transform .3s ease;
+}
+.slot.out .n{opacity:0;transform:translate(var(--ex),var(--ey)) scale(.97)}
+.n::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(130px 90px at 0 0,rgba(var(--rgb),.22),transparent 70%)}
+.n .bd{position:relative;min-width:0}
+.n .hd{display:flex;align-items:center;gap:8px}
+.n .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n .tm{margin-left:auto;font-weight:600;font-size:12px;color:var(--dim);flex:none}
+.n .msg{margin-top:3px;font-weight:500;font-size:13.5px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+.n .msg:empty{display:none}
+.n .tag{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.n .bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.06)}
+.n .bar i{display:block;height:100%;background:rgb(var(--rgb));transform-origin:left;animation:drain linear forwards}
+.n.t-announce{border-color:rgba(255,255,255,.14)}
+.n .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:8px;
+  font-weight:700;font-size:11.5px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.82);white-space:nowrap}
+.chip svg.i{width:12px;height:12px;stroke-width:2.4}
+.chip.prio{background:rgba(var(--prgb),.2);color:rgb(var(--prgb))}
+
+.n.dispatch{
+  --c1:47,107,255;--c2:239,75,90;--prgb:245,165,36;--spd:500ms;
+  background:var(--tint,var(--card));padding-top:19px;padding-left:17px;border-color:rgba(var(--c1),.28);
+}
+.n.dispatch::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(rgb(var(--c1)) 50%,rgb(var(--c2)) 50%)}
+.dh{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.dept{font-size:10.5px;font-weight:800;letter-spacing:.12em;padding:3px 7px;border-radius:6px;background:rgba(var(--c1),.22);color:rgb(var(--c1))}
+.code{font-size:12px;font-weight:800;color:#fff;letter-spacing:.02em}
+.pips{margin-left:auto;display:flex;align-items:flex-end;gap:3px;height:13px}
+.pips i{width:4px;border-radius:2px;background:rgba(255,255,255,.16)}
+.pips i:nth-child(1){height:6px}.pips i:nth-child(2){height:9px}.pips i:nth-child(3){height:13px}
+.pips i.on{background:rgb(var(--prgb));box-shadow:0 0 6px rgba(var(--prgb),.6)}
+.n.dispatch .tt{font-size:15.5px}
+.n.dispatch .ic{background:rgba(var(--c1),.2);box-shadow:inset 0 0 0 1px rgba(var(--c1),.4)}
+.n.dispatch .ic svg.i{color:rgb(var(--c1))}
+.n.dispatch .bar i{background:linear-gradient(90deg,rgb(var(--c1)),rgb(var(--c2)))}
+.strip{position:absolute!important;left:0;right:0;top:0;height:5px;overflow:hidden}
+.strip::before,.strip::after{content:"";position:absolute;top:0;bottom:0}
+.st-lightbar .strip::before{left:0;width:50%;background:rgb(var(--c1));box-shadow:0 0 12px rgb(var(--c1))}
+.st-lightbar .strip::after{right:0;width:50%;background:rgb(var(--c2));box-shadow:0 0 12px rgb(var(--c2))}
+.st-stripes .strip::before{left:-60px;right:0;background:repeating-linear-gradient(-45deg,rgb(var(--c1)) 0 10px,rgb(var(--c2)) 10px 20px)}
+.st-solid .strip::before{left:0;right:0;background:rgb(var(--c1))}
+.st-solid .strip::after{left:0;right:0;background:rgb(var(--c2));opacity:0}
+.fl-strip.st-lightbar .strip::before{animation:flA var(--spd) steps(1) infinite}
+.fl-strip.st-lightbar .strip::after{animation:flB var(--spd) steps(1) infinite}
+.fl-strip.st-stripes .strip::before{animation:slide calc(var(--spd) * 1.6) linear infinite}
+.fl-strip.st-solid .strip::after{animation:flA var(--spd) steps(1) infinite}
+.fl-edge::after{animation:edge var(--spd) steps(1) infinite}
+.fl-glow{animation:nIn .45s cubic-bezier(.2,.9,.25,1.15) backwards,glow var(--spd) steps(1) infinite}
+.p-pulse .ic::after{content:"";position:absolute;inset:-1px;border-radius:12px;box-shadow:0 0 0 0 rgba(var(--prgb),.7);animation:ring 1.4s ease-out infinite}
+.n.upd{animation:none}
+.n.upd.fl-glow{animation:glow var(--spd) steps(1) infinite}
+@keyframes flA{0%{opacity:1}50%{opacity:.12}}
+@keyframes flB{0%{opacity:.12}50%{opacity:1}}
+@keyframes slide{to{transform:translateX(28.284px)}}
+@keyframes edge{0%{background:rgb(var(--c1))}50%{background:rgb(var(--c2))}}
+@keyframes glow{
+  0%{box-shadow:var(--shadow),0 0 0 1px rgba(var(--c1),.55),0 0 24px rgba(var(--c1),.38)}
+  50%{box-shadow:var(--shadow),0 0 0 1px rgba(var(--c2),.55),0 0 24px rgba(var(--c2),.38)}}
+@keyframes ring{to{box-shadow:0 0 0 9px rgba(var(--prgb),0)}}
+@keyframes nIn{from{opacity:0;transform:translate(var(--ex),var(--ey)) scale(.97)}}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* ================= progress ================= */
+#progress{left:50%;transform:translateX(-50%);width:380px;max-width:calc(100vw - 32px);z-index:6}
+#progress.pos-bottom{bottom:9vh}
+#progress.pos-center{top:62vh}
+.prog{padding:14px 16px 14px 14px}
+.prog .top{display:flex;align-items:center;gap:12px}
+.prog .tx{min-width:0}
+.prog .pct{margin-left:auto;font-weight:800;font-size:18px;color:rgb(var(--rgb));font-variant-numeric:tabular-nums}
+.prog .track{margin-top:12px;height:8px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+.prog .track i{display:block;height:100%;width:0;border-radius:6px;
+  background:linear-gradient(90deg,rgba(var(--rgb),.7),rgb(var(--rgb)));box-shadow:0 0 12px rgba(var(--rgb),.5)}
+.prog .steps{margin-top:12px;display:flex;gap:5px}
+.prog .steps b{flex:1;height:8px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+.prog .steps b i{display:block;height:100%;width:0;background:rgb(var(--rgb))}
+.prog .foot{margin-top:10px;justify-content:space-between}
+.prog.cancelled{--rgb:var(--bad)!important}
+.prog.done{--rgb:var(--ok)!important}
+
+/* ================= modal: alert + input ================= */
+#modal{inset:0;z-index:20}
+#modal.show{display:grid;place-items:center}
+#modal.backdrop{background:radial-gradient(ellipse at center,rgba(5,8,14,.35),rgba(5,8,14,.65))}
+#modal.show.backdrop{animation:fade .2s ease backwards}
+#modal.out.backdrop{animation:fadeOut .18s ease forwards}
+@keyframes fade{from{opacity:0}}
+@keyframes fadeOut{to{opacity:0}}
+.dlg{width:420px;max-width:calc(100vw - 32px);padding:18px}
+.dlg .dhead{display:flex;gap:12px;align-items:center}
+.dlg .dbody{margin-top:14px;font-weight:500;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.dlg .dbody:empty{display:none}
+.callout{margin-top:12px;display:flex;gap:10px;padding:10px 12px;border-radius:12px;
+  background:rgba(var(--rgb),.1);box-shadow:inset 3px 0 0 rgb(var(--rgb));font-size:12.5px;line-height:1.45;color:var(--muted)}
+.callout svg.i{width:16px;height:16px;color:rgb(var(--rgb));margin-top:1px}
+.callout b{display:block;font-size:12.5px}
+.btns{margin-top:16px;display:flex;gap:8px;justify-content:flex-end}
+
+.inp{width:420px;max-width:calc(100vw - 32px)}
+.inp .dhead{display:flex;gap:12px;align-items:center;padding:16px 18px 14px;border-bottom:1px solid var(--line)}
+.inp .fields{padding:14px 18px;display:flex;flex-direction:column;gap:14px;max-height:60vh;overflow:auto}
+.inp .fields::-webkit-scrollbar{width:6px}.inp .fields::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+.inp .btns{margin:0;padding:12px 18px 16px;border-top:1px solid var(--line)}
+.f>label{display:flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px;margin-bottom:6px}
+.f>label .req{color:rgb(var(--bad))}
+.f .desc{font-size:11.5px;color:var(--dim);font-weight:500;margin-top:5px}
+.f .err{display:none;font-size:11.5px;color:rgb(var(--bad));font-weight:700;margin-top:5px}
+.f.bad .err{display:block}
+.f.bad .box{box-shadow:inset 0 0 0 1px rgba(var(--bad),.8)}
+.f.dis{opacity:.45;pointer-events:none}
+.box{display:flex;align-items:center;gap:8px;padding:0 12px;height:40px;border-radius:10px;background:var(--field);
+  box-shadow:inset 0 0 0 1px var(--line);transition:box-shadow .15s}
+.box:focus-within{box-shadow:inset 0 0 0 1px rgba(var(--accent),.8),0 0 0 3px rgba(var(--accent),.15)}
+.box svg.i{width:16px;height:16px;color:var(--dim)}
+.box input,.box textarea{flex:1;min-width:0;background:none;border:0;outline:0;font-weight:600;font-size:13.5px}
+.box input::placeholder,.box textarea::placeholder{color:var(--dim)}
+.box.ta{height:auto;padding:10px 12px}
+.box.ta textarea{resize:none;height:64px;line-height:1.4}
+.box .sbtn{width:26px;height:26px;border-radius:7px;border:0;background:rgba(255,255,255,.08);cursor:pointer;display:grid;place-items:center;flex:none}
+.box .sbtn:hover{background:rgba(255,255,255,.14)}
+.box .sbtn svg.i{width:14px;height:14px;color:#fff}
+.box input[type=number]{text-align:center}
+.box input::-webkit-inner-spin-button{-webkit-appearance:none}
+.box input[type=date]{color-scheme:dark}
+.range{display:flex;align-items:center;gap:8px}
+.range .box{flex:1}
+.sel{position:relative}
+.sel .box{cursor:pointer}
+.sel .box .val{flex:1;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sel .box .val.ph{color:var(--dim)}
+.sel .box .chev{transition:transform .15s}
+.sel.open .box .chev{transform:rotate(180deg)}
+.sel .dd{display:none;position:absolute;left:0;right:0;top:44px;z-index:5;padding:5px;border-radius:12px;max-height:220px;overflow:auto;
+  background:#121a2a;box-shadow:var(--shadow),inset 0 0 0 1px var(--line)}
+.sel.open .dd{display:block}
+.dd div{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
+.dd div:hover{background:rgba(255,255,255,.07)}
+.dd div.on{color:rgb(var(--accent))}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags button{border:0;cursor:pointer;padding:7px 11px;border-radius:9px;font-weight:700;font-size:12.5px;
+  background:var(--field);box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+.tags button.on{background:rgba(var(--accent),.18);box-shadow:inset 0 0 0 1px rgba(var(--accent),.6);color:#fff}
+.slider{display:flex;align-items:center;gap:12px}
+.slider input{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;outline:0;cursor:pointer;
+  background:linear-gradient(90deg,rgb(var(--accent)) var(--p,50%),rgba(255,255,255,.1) var(--p,50%))}
+.slider input::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(var(--accent),.35)}
+.slider output{min-width:42px;text-align:right;font-weight:800;font-size:13px;color:rgb(var(--accent))}
+.tog{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+.tog .tl{font-weight:700;font-size:13px}
+.tog .sw{position:relative;width:38px;height:22px;border-radius:12px;background:rgba(255,255,255,.12);transition:background .2s;flex:none}
+.tog .sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.tog.on .sw{background:rgb(var(--accent))}
+.tog.on .sw::after{transform:translateX(16px)}
+.chk{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:13px;color:var(--muted)}
+.chk .bx{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:var(--field);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);flex:none}
+.chk .bx svg.i{width:13px;height:13px;stroke-width:3;opacity:0;color:#0b111c}
+.chk.on .bx{background:rgb(var(--accent));box-shadow:none}
+.chk.on .bx svg.i{opacity:1}
+.colors{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.colors button{width:26px;height:26px;border-radius:8px;border:0;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.colors button.on{box-shadow:0 0 0 2px #0b111c,0 0 0 4px #fff}
+.colors .hex{margin-left:auto;font-weight:700;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ================= context menu ================= */
+#context{top:50%;transform:translateY(-50%);z-index:8}
+#context.pos-right{right:24px}
+#context.pos-left{left:24px}
+.ctx{width:340px;max-width:calc(100vw - 32px);max-height:76vh;display:flex;flex-direction:column}
+.ctx .chead{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;border-bottom:1px solid var(--line);flex:none}
+.ctx .back{width:32px;height:32px;border-radius:10px;border:0;background:rgba(255,255,255,.07);cursor:pointer;display:grid;place-items:center;flex:none}
+.ctx .back:hover{background:rgba(255,255,255,.13)}
+.ctx .back svg.i{width:16px;height:16px}
+.ctx .list{padding:6px;display:flex;flex-direction:column;gap:2px;overflow:auto}
+.ctx .list::-webkit-scrollbar{width:6px}.ctx .list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+.opt{--rgb:var(--accent);display:flex;gap:11px;align-items:flex-start;padding:9px 10px;border-radius:12px;cursor:pointer;transition:background .15s}
+.opt:hover{background:rgba(255,255,255,.06)}
+.opt .ot{font-weight:700;font-size:13.5px}
+.opt .od{font-weight:500;font-size:12px;color:var(--muted);margin-top:1px}
+.opt .body{flex:1;min-width:0}
+.opt .end{align-self:center;display:flex;align-items:center;gap:6px;color:var(--dim)}
+.opt .end svg.i{width:16px;height:16px}
+.opt .end .pv{font-weight:800;font-size:12px;color:rgb(var(--prgb,var(--rgb)))}
+.opt .mbar{margin-top:7px}
+.opt .mbar i{background:rgb(var(--prgb,var(--rgb)))}
+.opt.dis{opacity:.4;cursor:not-allowed}
+.opt.dis:hover,.opt.ro:hover{background:none}
+.opt.ro{cursor:default}
+.meta{display:grid;grid-template-rows:0fr;transition:grid-template-rows .2s}
+.meta>div{overflow:hidden}
+.opt:hover .meta{grid-template-rows:1fr}
+.meta img{display:block;width:100%;border-radius:10px;margin-top:8px}
+.meta .mrow{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:6px}
+.meta .mrow b{text-align:right}
+.meta .mbar{margin-top:4px;height:4px}
+
+/* ================= list menu ================= */
+#list{z-index:7}
+#list.pos-top-left{top:24px;left:24px}
+#list.pos-top-right{top:24px;right:24px}
+#list.pos-bottom-left{bottom:24px;left:24px}
+#list.pos-bottom-right{bottom:24px;right:24px}
+.lm{width:340px;max-width:calc(100vw - 32px)}
+.lm .lhead{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;border-bottom:1px solid var(--line)}
+.lm .count{margin-left:auto;font-weight:800;font-size:12px;color:var(--dim)}
+.lm .rows{padding:6px;display:flex;flex-direction:column;gap:2px;max-height:60vh;overflow:hidden}
+.lr{position:relative;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border-radius:10px;flex:none}
+.lr>svg.i{width:16px;height:16px;color:var(--dim)}
+.lr .lt{flex:1;font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr .ld{display:none;position:absolute;left:38px;right:12px;top:31px;font-weight:500;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr.sel{background:rgba(var(--accent),.14)}
+.lr.sel.has-d{padding-bottom:26px}
+.lr.sel::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:rgb(var(--accent))}
+.lr.sel>svg.i{color:rgb(var(--accent))}
+.lr.sel .ld{display:block}
+.lr.dis{opacity:.4}
+.side{display:flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px}
+.side svg.i{width:12px;height:12px;color:var(--dim)}
+.lr.sel .side svg.i{color:#fff}
+.side .v{min-width:72px;text-align:center}
+.lr .mbar{width:80px}
+.lm .lfoot{padding:10px 12px 12px;border-top:1px solid var(--line);gap:10px;font-size:11px;flex-wrap:nowrap}
+.lm .lfoot span{gap:4px}
+.lm .lfoot .key{min-width:18px;height:18px;padding:0 4px;font-size:10.5px}
+
+/* ================= radial ================= */
+#radial{left:50%;top:50%;transform:translate(-50%,-50%);z-index:15}
+.radial{position:relative;width:340px;height:340px}
+.radial svg.wheel{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 24px rgba(0,0,0,.35))}
+.wedge>path{fill:rgba(11,17,28,.9);stroke:rgba(255,255,255,.07);stroke-width:1;transition:fill .15s;cursor:pointer}
+.wedge:hover>path{fill:rgba(26,44,70,.95);stroke:rgba(var(--accent),.7)}
+.wedge.ro>path{cursor:default}
+.wedge.ro:hover>path{fill:rgba(11,17,28,.9);stroke:rgba(255,255,255,.07)}
+.wedge text{fill:#fff;font-weight:700;font-size:11px;text-anchor:middle;pointer-events:none}
+.wedge .wi{color:rgba(255,255,255,.85);pointer-events:none}
+.wedge:hover .wi{color:rgb(var(--accent))}
+.wedge.ro:hover .wi{color:rgba(255,255,255,.85)}
+.wedge .badge{fill:rgb(var(--bad))}
+.wedge .badge-t{fill:#fff;font-size:9.5px;font-weight:800}
+.radial .center{position:absolute;left:50%;top:50%;width:112px;height:112px;transform:translate(-50%,-50%);
+  border-radius:50%;display:grid;place-items:center;text-align:center;padding:12px;cursor:pointer;
+  background:var(--card);border:1px solid var(--card-b);color:#fff}
+.radial .center .ct{font-weight:800;font-size:13px}
+.radial .center .cd{font-weight:600;font-size:10.5px;color:var(--dim);margin-top:2px}
+
+/* ================= text ui ================= */
+#textui{z-index:5}
+#textui.pos-right-center{right:24px;top:50%;transform:translateY(-50%)}
+#textui.pos-left-center{left:24px;top:50%;transform:translateY(-50%)}
+#textui.pos-top-center{top:24px;left:50%;transform:translateX(-50%)}
+#textui.pos-bottom-center{bottom:24px;left:50%;transform:translateX(-50%)}
+.tui{display:inline-flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;max-width:360px}
+.tui .key{min-width:30px;height:30px;font-size:13px;border-radius:8px}
+.tui .tt{font-size:14px}
+.tui .sub{font-size:12px}
+.tui.opts{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0;min-width:250px}
+.tui.opts .th{padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+.tui.opts .tr{display:flex;align-items:center;gap:10px;padding:8px 14px;font-weight:700;font-size:13px}
+.tui.opts .tr:last-child{padding-bottom:12px}
+.tui.opts .tr svg.i{width:16px;height:16px;color:var(--dim);margin-left:auto}
+.tui.small{padding:6px 12px 6px 6px;gap:8px;border-radius:12px}
+.tui.small .key{min-width:24px;height:24px;font-size:11.5px}
+
+/* ================= minigames ================= */
+#minigame{left:50%;top:50%;transform:translate(-50%,-50%);z-index:16}
+.mg{width:340px;padding:16px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.mg .mh{display:flex;align-items:center;gap:12px;width:100%}
+.mg .stage{width:100%;display:grid;place-items:center}
+.mg .mf{width:100%;display:flex;align-items:center;gap:10px}
+.mg .status{flex:1;font-weight:700;font-size:12.5px;color:var(--muted)}
+.mg.win{--rgb:var(--ok)!important}.mg.lose{--rgb:var(--bad)!important}
+.mg.win .status{color:rgb(var(--ok))}.mg.lose .status{color:rgb(var(--bad))}
+.rounds{display:flex;gap:5px}
+.rounds i{width:18px;height:5px;border-radius:3px;background:rgba(255,255,255,.12)}
+.rounds i.done{background:rgb(var(--ok))}
+.rounds i.fail{background:rgb(var(--bad))}
+.sc{position:relative;width:200px;height:200px}
+.sc svg{width:100%;height:100%}
+.sc .trk{fill:none;stroke:rgba(255,255,255,.08);stroke-width:12}
+.sc .zone{fill:none;stroke:rgb(var(--rgb));stroke-width:12;filter:drop-shadow(0 0 6px rgba(var(--rgb),.7))}
+.sc .needle{stroke:#fff;stroke-width:4;stroke-linecap:round}
+.sc .hub{position:absolute;inset:0;display:grid;place-items:center}
+.sc .hub .key{min-width:46px;height:46px;font-size:18px;border-radius:12px}
+.sb{width:100%;display:flex;flex-direction:column;gap:22px}
+.nodes{display:flex;align-items:center;justify-content:center}
+.node{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;
+  background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 2px rgba(255,255,255,.12);color:var(--dim);transition:all .2s;flex:none}
+.node.cur{background:rgba(var(--rgb),.18);box-shadow:inset 0 0 0 2px rgb(var(--rgb)),0 0 16px rgba(var(--rgb),.45);color:#fff}
+.node.ok{background:rgb(var(--ok));box-shadow:0 0 14px rgba(var(--ok),.5);color:#0b111c}
+.node.no{background:rgb(var(--bad));color:#fff}
+.link{width:22px;height:3px;background:rgba(255,255,255,.1);flex:none}
+.link.ok{background:rgb(var(--ok))}
+.sbtrack{position:relative;height:34px;border-radius:10px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.sbtrack .win{position:absolute;top:0;bottom:0;background:rgba(var(--rgb),.22);box-shadow:inset 0 0 0 1px rgba(var(--rgb),.7)}
+.sbtrack .cur{position:absolute;top:4px;bottom:4px;width:4px;margin-left:-2px;border-radius:2px;background:#fff;box-shadow:0 0 10px #fff}
+.pl{display:grid;gap:8px}
+.pl button{width:52px;height:52px;border-radius:12px;border:0;cursor:pointer;background:rgba(255,255,255,.06);
+  box-shadow:inset 0 0 0 1px var(--line);transition:background .12s,box-shadow .12s}
+.pl button:hover{background:rgba(255,255,255,.1)}
+.pl button.lit{background:rgb(var(--rgb));box-shadow:0 0 16px rgba(var(--rgb),.6)}
+.pl.locked button{cursor:default;pointer-events:none}
+.mg .ptimer{width:100%}
+</style>
+<style>
+  .pp{position:fixed;left:16px;bottom:16px;z-index:100;width:290px;padding:12px;border-radius:14px;
+    background:#fff;border:1px solid #e3e7ee;box-shadow:0 8px 24px rgba(20,30,50,.12);color:#1d2433;
+    font:600 12px "Inter",system-ui,sans-serif}
+  .pp h4{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#7a8394;margin:10px 0 6px}
+  .pp h4:first-child{margin-top:0}
+  .pp .row{display:flex;flex-wrap:wrap;gap:5px}
+  .pp button{border:0;border-radius:7px;padding:6px 9px;background:#eef1f5;color:#1d2433;cursor:pointer;font:inherit}
+  .pp button:hover{background:#e1e6ee}
+  .pp p{margin-top:8px;color:#7a8394;font-weight:500;line-height:1.4}
+</style>
+</head>
+<body>
+<div id="ui">
+  <div id="notify" class="pos-top-right"></div>
+  <div id="textui"></div>
+  <div id="list"></div>
+  <div id="context"></div>
+  <div id="progress"></div>
+  <div id="radial"></div>
+  <div id="minigame"></div>
+  <div id="modal"></div>
+</div>
+
+<div class="pp">
+  <h4>Show</h4>
+  <div class="row">
+    <button data-t="notify">Notifications</button><button data-t="progress">Progress</button><button data-t="steps">Progress (steps)</button>
+    <button data-t="alert">Alert</button><button data-t="input">Input</button><button data-t="context">Context</button>
+    <button data-t="list">List</button><button data-t="radial">Radial</button><button data-t="text">Text UI</button>
+  </div>
+  <h4>Mini games</h4>
+  <div class="row">
+    <button data-t="skill">Skill check</button><button data-t="breach">Signal breach</button><button data-t="pattern">Pattern lock</button>
+  </div>
+  <p>Press X to cancel progress. Esc closes dialogs and menus. For the list, use ↑ ↓ ← → Enter Backspace.</p>
+</div>
+
+<script>
+/* UnitLink-UI core: helpers, icons, Lua <-> NUI messaging */
+(() => {
+  'use strict';
+
+  const IS_NUI = typeof GetParentResourceName === 'function';
+  const RESOURCE = IS_NUI ? GetParentResourceName() : 'UnitLink-UI';
+  const handlers = {};
+  const escStack = [];
+  const initHooks = [];
+
+  const ICONS = {
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    x: '<path d="M7 7l10 10M17 7L7 17"/>',
+    warning: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.1"/>',
+    announce: '<path d="M4 10v4h3l6 4V6L7 10z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a7.5 7.5 0 010 11"/>',
+    sms: '<path d="M4 6.5A2.5 2.5 0 016.5 4h11A2.5 2.5 0 0120 6.5v8a2.5 2.5 0 01-2.5 2.5H10l-4.5 3.5V17A1.5 1.5 0 014 15.5z"/>',
+    badge: '<path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M12 8.5l1.1 2.2 2.4.3-1.8 1.6.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.6 2.4-.3z"/>',
+    fire: '<path d="M12 3c.8 3.2 5 5.4 5 10.2A5 5 0 017 13.2c0-2.3 1-3.8 2.3-5 .2 1.7 1 2.8 2 3.2.4-3-.3-5.7.7-8.4z"/>',
+    medical: '<path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z"/>',
+    bell: '<path d="M6 16v-5a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/>',
+    pin: '<path d="M12 21s-6-5.6-6-11a6 6 0 0112 0c0 5.4-6 11-6 11z"/><circle cx="12" cy="10" r="2"/>',
+    wrench: '<path d="M14.5 6.5a4 4 0 00-5.2 5.2L4 17l3 3 5.3-5.3a4 4 0 005.2-5.2l-2.5 2.5-2.5-.5-.5-2.5z"/>',
+    box: '<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+    tag: '<path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/>',
+    lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+    unlock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 017.5-2"/>',
+    eye: '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    minus: '<path d="M5 12h14"/>',
+    card: '<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h3"/>',
+    down: '<path d="M6 9l6 6 6-6"/>',
+    up: '<path d="M6 15l6-6 6 6"/>',
+    left: '<path d="M15 6l-6 6 6 6"/>',
+    right: '<path d="M9 6l6 6-6 6"/>',
+    calendar: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+    garage: '<path d="M3 20V9l9-5 9 5v11"/><path d="M7 20v-7h10v7M7 16h10"/>',
+    car: '<path d="M5 16h14v-4l-2-5H7l-2 5z"/><path d="M5 16v3M19 16v3"/><circle cx="8" cy="13.5" r=".8"/><circle cx="16" cy="13.5" r=".8"/>',
+    fuel: '<path d="M5 20V5a1.5 1.5 0 011.5-1.5h6A1.5 1.5 0 0114 5v15M3.5 20h12M14 9h2a2 2 0 012 2v5a1.5 1.5 0 003 0V8l-3-3"/><path d="M7 7.5h5"/>',
+    key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2"/>',
+    ban: '<circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/>',
+    spray: '<rect x="7" y="9" width="8" height="12" rx="2"/><path d="M9 9V6h4v3M16 5h.1M19 4h.1M19 7h.1M16 2h.1"/>',
+    wheel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/>',
+    bolt: '<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+    turbo: '<circle cx="12" cy="12" r="8"/><path d="M12 12l4-4M12 4v2M20 12h-2"/>',
+    smile: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 007 0M9 9.5h.1M15 9.5h.1"/>',
+    shirt: '<path d="M8 4l-5 3 2 4 2-1v10h10V10l2 1 2-4-5-3a4 4 0 01-8 0z"/>',
+    phone: '<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/>',
+    walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v3M9 12l2-4.5 3 1 2 3.5M11 7.5L8 9l-1 3"/>',
+    dots: '<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>',
+    door: '<path d="M6 21V4a1 1 0 011-1h10a1 1 0 011 1v17M3 21h18"/><circle cx="14.5" cy="12" r=".8"/>',
+    engine: '<path d="M4 10h3l2-2h5l2 2h2v3h2v-2M4 10v7h3l2 2h7l2-2v-4M4 13H2"/>',
+    window: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/>',
+    light: '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9V16h7v-2.1A6 6 0 0012 3z"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    signal: '<path d="M5 18v-3M10 18v-6M15 18V9M20 18V5"/>',
+    grid: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
+    drop: '<path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0M16 4.5a3.5 3.5 0 010 7M18 14a6 6 0 013.5 6"/>',
+    home: '<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/>',
+    map: '<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/>',
+    hand: '<path d="M8 13V5.5a1.5 1.5 0 013 0V11M11 10V4.5a1.5 1.5 0 013 0V11M14 10V6a1.5 1.5 0 013 0v7a7 7 0 01-7 7 6 6 0 01-5-3l-2-4a1.5 1.5 0 012.5-1.6L8 13"/>',
+    paw: '<circle cx="7" cy="9" r="1.8"/><circle cx="12" cy="6.5" r="1.8"/><circle cx="17" cy="9" r="1.8"/><path d="M8 17c0-3 2-5 4-5s4 2 4 5a2 2 0 01-2 2h-4a2 2 0 01-2-2z"/>',
+    tree: '<path d="M12 3l6 8h-3l4 6H5l4-6H6z"/><path d="M12 17v4"/>',
+    fish: '<path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5z"/><path d="M21 12l-2-2v4z"/><circle cx="8" cy="11" r=".8"/>',
+  };
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // escaped text + **bold** + line breaks
+  const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+
+  function rgb(color, fallback = '255,255,255') {
+    if (typeof color !== 'string') return fallback;
+    const m = color.trim().match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (m) return `${m[1]},${m[2]},${m[3]}`;
+    let h = color.trim().replace('#', '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    if (!/^[0-9a-f]{6}$/i.test(h)) return fallback;
+    const n = parseInt(h, 16);
+    return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+  }
+
+  function svg(name, fallback, style) {
+    const p = ICONS[name] || ICONS[fallback];
+    if (!p) return '';
+    return `<svg class="i" viewBox="0 0 24 24"${style ? ` style="${style}"` : ''}>${p}</svg>`;
+  }
+
+  // --rgb value for an optional custom color, else a named token
+  const tone = (color, token = 'accent') => (color ? rgb(color) : `var(--${token})`);
+
+  function post(name, data) {
+    if (!IS_NUI) { if (UI.mock) UI.mock(name, data || {}); return Promise.resolve(); }
+    return fetch(`https://${RESOURCE}/${name}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify(data || {}),
+    }).catch(() => {});
+  }
+
+  // single-instance containers: animate in / out
+  function show(el, html) {
+    clearTimeout(el._hideTimer);
+    el.classList.remove('out', 'show');
+    if (html !== undefined) el.innerHTML = html;
+    void el.offsetWidth;
+    el.classList.add('show');
+  }
+  function hide(el) {
+    if (!el.classList.contains('show') || el.classList.contains('out')) return;
+    el.classList.add('out');
+    el._hideTimer = setTimeout(() => { el.classList.remove('show', 'out'); el.innerHTML = ''; }, 180);
+  }
+  const isShown = el => el.classList.contains('show') && !el.classList.contains('out');
+
+  // Escape goes to whatever opened last
+  function onEsc(owner, fn) { offEsc(owner); escStack.push({ owner, fn }); }
+  function offEsc(owner) { const i = escStack.findIndex(e => e.owner === owner); if (i >= 0) escStack.splice(i, 1); }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && escStack.length) { e.preventDefault(); escStack[escStack.length - 1].fn(); }
+  });
+
+  const UI = window.UI = {
+    IS_NUI, ICONS, cfg: {},
+    $, $$, esc, fmt, rgb, svg, tone, post, show, hide, isShown, onEsc, offEsc,
+    on: (action, fn) => { handlers[action] = fn; },
+    onInit: fn => initHooks.push(fn),
+    // used by the browser preview to fake Lua
+    emit: (action, data) => { const h = handlers[action]; if (h) h(data || {}); },
+  };
+
+  window.addEventListener('message', e => {
+    const m = e.data || {};
+    const h = handlers[m.action];
+    if (!h) return;
+    try { h(m.data || {}); } catch (err) { console.error('[UnitLink-UI]', m.action, err); }
+  });
+
+  UI.on('init', c => {
+    UI.cfg = c || {};
+    document.documentElement.style.setProperty('--accent', rgb(UI.cfg.accent, '45,212,191'));
+    document.documentElement.style.setProperty('--scale', UI.cfg.scale || 1);
+    initHooks.forEach(fn => fn(UI.cfg));
+  });
+  UI.on('visible', d => $('#ui').classList.toggle('hidden', !d.visible));
+
+  if (IS_NUI) {
+    // tell Lua we're loaded (retry until the client script has registered its callback)
+    const ready = () => fetch(`https://${RESOURCE}/ready`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json; charset=UTF-8' }, body: '{}',
+    }).then(r => { if (!r.ok) throw new Error(); }).catch(() => setTimeout(ready, 1000));
+    window.addEventListener('load', ready);
+  }
+})();
+</script>
+<script>
+/* Notifications (standard + police / SAFR) */
+(() => {
+  'use strict';
+  const { $, esc, fmt, rgb, svg } = UI;
+  const POSITIONS = ['top-right', 'top-left', 'bottom-right', 'bottom-left', 'center-top'];
+  const root = $('#notify');
+  const live = new Map(); // id -> { slot, timer, leaving }
+  let seq = 0;
+
+  const cfg = () => UI.cfg.notify || {};
+  const position = () => (POSITIONS.includes(cfg().position) ? cfg().position : 'top-right');
+  const isBottom = () => position().startsWith('bottom');
+
+  UI.onInit(() => {
+    root.className = 'pos-' + position();
+    root.style.setProperty('--ox', (cfg().offset?.x ?? 24) + 'px');
+    root.style.setProperty('--oy', (cfg().offset?.y ?? 24) + 'px');
+  });
+
+  function mount(id, html, duration) {
+    const existing = live.get(id);
+    if (existing && !existing.leaving) {
+      existing.slot.innerHTML = html;
+      existing.slot.firstElementChild.classList.add('upd');
+      arm(id, existing, duration);
+      return;
+    }
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.innerHTML = html;
+    if (isBottom()) root.appendChild(slot); else root.prepend(slot);
+    const item = { slot, timer: null, leaving: false };
+    live.set(id, item);
+    arm(id, item, duration);
+
+    const max = Math.max(1, cfg().maxVisible || 5);
+    const ids = [...live.keys()].filter(k => !live.get(k).leaving);
+    for (let i = 0; i < ids.length - max; i++) remove(ids[i]);
+  }
+
+  function arm(id, item, duration) {
+    clearTimeout(item.timer);
+    if (Number(duration) > 0) item.timer = setTimeout(() => remove(id), Number(duration));
+  }
+
+  function remove(id) {
+    const item = live.get(id);
+    if (!item || item.leaving) return;
+    item.leaving = true;
+    clearTimeout(item.timer);
+    const slot = item.slot;
+    slot.style.height = slot.offsetHeight + 'px';
+    void slot.offsetHeight;
+    slot.classList.add('out');
+    setTimeout(() => { slot.remove(); live.delete(id); }, 340);
+  }
+
+  const bar = d => (Number(d) > 0 ? `<div class="bar"><i style="animation-duration:${Number(d)}ms"></i></div>` : '');
+
+  function notify(d) {
+    const types = cfg().types || {};
+    const type = types[d.type] ? d.type : 'info';
+    const t = types[type] || {};
+    const id = String(d.id ?? 'ui' + ++seq);
+    mount(id, `
+      <div class="n t-${type}" style="--rgb:${rgb(d.color || t.color, '59,167,255')}">
+        <div class="ic">${svg(d.icon || t.icon, 'info')}</div>
+        <div class="bd">
+          ${t.tag ? `<div class="tag">${esc(t.tag)}</div>` : ''}
+          <div class="hd"><div class="tt">${esc(d.title ?? t.title ?? '')}</div>${t.tag ? '' : '<div class="tm">now</div>'}</div>
+          <div class="msg">${fmt(d.message)}</div>
+        </div>
+        ${bar(d.duration)}
+      </div>`, d.duration);
+  }
+
+  function dispatch(d) {
+    const deps = cfg().departments || {};
+    const deptKey = deps[d.dept] ? d.dept : Object.keys(deps)[0];
+    const dept = deps[deptKey] || {};
+    const prios = cfg().priorities || [];
+    const levels = prios.length || 3;
+    let prio = parseInt(d.priority, 10);
+    if (!(prio >= 1 && prio <= levels)) prio = Math.min(2, levels);
+    const p = prios[prio - 1] || {};
+    const f = cfg().flash || {};
+    const id = String(d.id ?? 'ui' + ++seq);
+
+    const flashing = typeof d.flash === 'boolean' ? d.flash : !!(f.enabled && prio <= (f.maxPriority ?? 2));
+    const cls = ['n', 'dispatch', 'st-' + (dept.strip || 'lightbar')];
+    if (flashing) {
+      if (f.strip !== false) cls.push('fl-strip');
+      if (f.edge !== false) cls.push('fl-edge');
+      if (f.glow !== false) cls.push('fl-glow');
+    }
+    if (p.pulse) cls.push('p-pulse');
+
+    const pi = cfg().priorityIndicator || {};
+    let pips = '';
+    if (pi.pips !== false) {
+      const filled = Math.ceil((levels - prio + 1) * 3 / levels);
+      pips = '<span class="pips">' + [1, 2, 3].map(i => `<i class="${i <= filled ? 'on' : ''}"></i>`).join('') + '</span>';
+    }
+    const chips = [];
+    if (pi.chip !== false) chips.push(`<span class="chip prio">${esc(p.short || 'P' + prio)} · ${esc(p.label || 'Priority ' + prio)}</span>`);
+    if (d.location) chips.push(`<span class="chip">${svg('pin')}${esc(d.location)}</span>`);
+
+    const c = dept.colors || [];
+    const style = [
+      `--rgb:${rgb(c[0])}`, `--c1:${rgb(c[0])}`, `--c2:${rgb(c[1] || c[0])}`,
+      `--prgb:${rgb(p.color, '245,165,36')}`, `--spd:${Number(f.speed) || 500}ms`,
+      dept.tint ? `--tint:${esc(dept.tint)}` : '',
+    ].filter(Boolean).join(';');
+
+    mount(id, `
+      <div class="${cls.join(' ')}" style="${style}">
+        <div class="strip"></div>
+        <div class="ic">${svg(d.icon || dept.icon, 'bell')}</div>
+        <div class="bd">
+          <div class="dh"><span class="dept">${esc(dept.label || String(deptKey).toUpperCase())}</span>${d.code ? `<span class="code">${esc(d.code)}</span>` : ''}${pips}</div>
+          <div class="hd"><div class="tt">${esc(d.title || 'Dispatch')}</div></div>
+          <div class="msg">${fmt(d.message)}</div>
+          ${chips.length ? `<div class="meta">${chips.join('')}</div>` : ''}
+        </div>
+        ${bar(d.duration)}
+      </div>`, d.duration);
+  }
+
+  UI.on('notify', notify);
+  UI.on('dispatch', dispatch);
+  UI.on('notify:remove', d => remove(String(d.id)));
+  UI.on('notify:clear', () => [...live.keys()].forEach(remove));
+})();
+</script>
+<script>
+/* Progress bar */
+(() => {
+  'use strict';
+  const { $, $$, esc, svg, tone } = UI;
+  const root = $('#progress');
+  let raf = null, steps = null, t0 = 0, dur = 1, endTimer = null;
+
+  function paint(card, p) {
+    $('.pct', card).textContent = Math.round(p * 100) + '%';
+    if (steps) {
+      const n = steps.length, seg = Math.min(n - 1, Math.floor(p * n));
+      $$('.steps i', card).forEach((el, i) => { el.style.width = Math.max(0, Math.min(1, p * n - i)) * 100 + '%'; });
+      $('.stp', card).textContent = seg + 1;
+      $('.stl', card).textContent = steps[seg];
+    } else {
+      $('.track i', card).style.width = p * 100 + '%';
+    }
+  }
+
+  UI.on('progress:start', d => {
+    clearTimeout(endTimer);
+    cancelAnimationFrame(raf);
+    steps = Array.isArray(d.steps) && d.steps.length ? d.steps.map(String) : null;
+    root.className = 'pos-' + (UI.cfg.progress?.position === 'center' ? 'center' : 'bottom');
+    const sub = steps
+      ? `Step <span class="stp">1</span> of ${steps.length} · <span class="stl">${esc(steps[0])}</span>`
+      : esc(d.description || '');
+    UI.show(root, `
+      <div class="card prog" style="--rgb:${tone(d.color)}">
+        <div class="top">
+          ${d.icon ? `<div class="ic">${svg(d.icon, 'clock')}</div>` : ''}
+          <div class="tx"><div class="tt">${esc(d.label || 'Working…')}</div><div class="sub">${sub}</div></div>
+          <div class="pct">0%</div>
+        </div>
+        ${steps ? `<div class="steps">${steps.map(() => '<b><i></i></b>').join('')}</div>` : '<div class="track"><i></i></div>'}
+        ${d.canCancel ? `<div class="foot hints"><span><span class="key">${esc(UI.cfg.progress?.cancelKey || 'X')}</span>Cancel</span><span class="state"></span></div>` : ''}
+      </div>`);
+    const card = $('.prog', root);
+    t0 = performance.now();
+    dur = Math.max(1, Number(d.duration) || 1);
+    const tick = now => {
+      const p = Math.min(1, (now - t0) / dur);
+      paint(card, p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  });
+
+  UI.on('progress:end', d => {
+    cancelAnimationFrame(raf);
+    const card = $('.prog', root);
+    if (!card) return;
+    if (d.cancelled) {
+      card.classList.add('cancelled');
+      const st = $('.state', card);
+      if (st) st.textContent = 'Cancelled'; else $('.sub', card).textContent = 'Cancelled';
+      endTimer = setTimeout(() => UI.hide(root), 900);
+    } else {
+      paint(card, 1);
+      card.classList.add('done');
+      endTimer = setTimeout(() => UI.hide(root), 300);
+    }
+  });
+})();
+</script>
+<script>
+/* Alert dialog + input dialog (share the #modal layer) */
+(() => {
+  'use strict';
+  const { $, $$, esc, fmt, svg, tone } = UI;
+  const modal = $('#modal');
+  const TYPES = { info: ['accent', 'info'], success: ['ok', 'check'], warning: ['warn', 'warning'], danger: ['bad', 'warning'], error: ['bad', 'x'] };
+
+  const openModal = html => {
+    modal.className = UI.cfg.dialog?.backdrop === false ? '' : 'backdrop';
+    UI.show(modal, html);
+  };
+
+  /* ================= alert ================= */
+  function callout(c) {
+    const t = TYPES[c.type] || TYPES.info;
+    return `<div class="callout" style="--rgb:var(--${t[0]})">${svg(c.icon || t[1], 'info')}<div>${c.label ? `<b>${esc(c.label)}</b>` : ''}${fmt(c.text || c.description || '')}</div></div>`;
+  }
+
+  UI.on('alert:open', d => {
+    const t = TYPES[d.type] || TYPES.info;
+    const callouts = d.callout ? (Array.isArray(d.callout) ? d.callout : [d.callout]) : [];
+    const labels = d.labels || {};
+    openModal(`
+      <div class="card dlg" style="--rgb:${d.color ? tone(d.color) : `var(--${t[0]})`}">
+        <div class="dhead">
+          <div class="ic">${svg(d.icon || t[1], 'info')}</div>
+          <div><div class="tt">${esc(d.header || 'Are you sure?')}</div><div class="sub">${esc(d.subheader || '')}</div></div>
+        </div>
+        <div class="dbody">${fmt(d.content || '')}</div>
+        ${callouts.map(callout).join('')}
+        <div class="btns">
+          ${d.cancel === false ? '' : `<button class="btn ghost" data-r="cancel">${esc(labels.cancel || 'Cancel')}</button>`}
+          <button class="btn solid" data-r="confirm">${esc(labels.confirm || 'Confirm')}</button>
+        </div>
+      </div>`);
+    $$('[data-r]', modal).forEach(b => b.onclick = () => answer(b.dataset.r));
+    UI.onEsc('alert', () => answer('cancel'));
+  });
+  function answer(result) { UI.offEsc('alert'); UI.post('alert:close', { result }); }
+  UI.on('alert:close', () => { UI.offEsc('alert'); UI.hide(modal); });
+
+  /* ================= input ================= */
+  let rows = [];
+  const optList = r => (r.options || []).map(o => (typeof o === 'object' ? { value: o.value ?? o.label, label: o.label ?? String(o.value) } : { value: o, label: String(o) }));
+  const COLORS = ['#ef4b5a', '#f5a524', '#22c38a', '#3ba7ff', '#a77bf3', '#f2f4f8', '#1b2130'];
+
+  function field(r, i) {
+    const type = r.type || 'input';
+    const req = r.required ? ' <span class="req">*</span>' : '';
+    const label = r.label ? `<label>${esc(r.label)}${req}</label>` : '';
+    const desc = r.description ? `<div class="desc">${esc(r.description)}</div>` : '';
+    const err = '<div class="err"></div>';
+    const icon = r.icon ? svg(r.icon) : '';
+    const ph = esc(r.placeholder || '');
+    const wrap = (inner, extra = '') => `<div class="f${r.disabled ? ' dis' : ''}" data-i="${i}" data-t="${type}"${extra}>${label}${inner}${err}${desc}</div>`;
+    const def = r.default;
+
+    switch (type) {
+      case 'input':
+        return wrap(`<div class="box">${icon}<input type="${r.password ? 'password' : 'text'}" placeholder="${ph}" value="${esc(def ?? '')}"${r.max ? ` maxlength="${r.max}"` : ''}>${r.password ? `<button class="sbtn" data-eye>${svg('eye')}</button>` : ''}</div>`);
+      case 'textarea':
+        return wrap(`<div class="box ta"><textarea placeholder="${ph}"${r.max ? ` maxlength="${r.max}"` : ''}>${esc(def ?? '')}</textarea></div>`);
+      case 'number':
+        return wrap(`<div class="box">${icon}<button class="sbtn" data-step="-1">${svg('minus')}</button><input type="number" value="${def ?? ''}" placeholder="${ph}"${r.min != null ? ` min="${r.min}"` : ''}${r.max != null ? ` max="${r.max}"` : ''} step="${r.step || 1}"><button class="sbtn" data-step="1">${svg('plus')}</button></div>`);
+      case 'select': {
+        const opts = optList(r), cur = opts.find(o => o.value === def);
+        return wrap(`<div class="sel"><div class="box">${icon}<span class="val${cur ? '' : ' ph'}">${esc(cur ? cur.label : (r.placeholder || 'Select…'))}</span>${svg('down', null).replace('class="i"', 'class="i chev"')}</div>
+          <div class="dd">${opts.map((o, k) => `<div data-k="${k}" class="${cur && cur.value === o.value ? 'on' : ''}">${esc(o.label)}</div>`).join('')}</div></div>`);
+      }
+      case 'multi-select': {
+        const on = Array.isArray(def) ? def : [];
+        return wrap(`<div class="tags">${optList(r).map((o, k) => `<button data-k="${k}" class="${on.includes(o.value) ? 'on' : ''}">${esc(o.label)}</button>`).join('')}</div>`);
+      }
+      case 'slider': {
+        const min = r.min ?? 0, max = r.max ?? 100, v = def ?? min;
+        return wrap(`<div class="slider"><input type="range" min="${min}" max="${max}" step="${r.step || 1}" value="${v}"><output></output></div>`);
+      }
+      case 'toggle':
+        return `<div class="f${r.disabled ? ' dis' : ''}" data-i="${i}" data-t="toggle"><div class="tog${def ? ' on' : ''}"><div><div class="tl">${esc(r.label || '')}</div>${desc.replace('class="desc"', 'class="desc" style="margin:2px 0 0"')}</div><div class="sw"></div></div>${err}</div>`;
+      case 'checkbox':
+        return `<div class="f${r.disabled ? ' dis' : ''}" data-i="${i}" data-t="checkbox"><div class="chk${def ? ' on' : ''}"><div class="bx">${svg('check')}</div>${esc(r.label || '')}${req}</div>${err}${desc}</div>`;
+      case 'color': {
+        const list = r.colors || COLORS, v = def || list[0];
+        return wrap(`<div class="colors">${list.map(c => `<button style="background:${esc(c)}" data-c="${esc(c)}" class="${c.toLowerCase() === String(v).toLowerCase() ? 'on' : ''}"></button>`).join('')}<span class="hex">${esc(String(v).toUpperCase())}</span></div>`);
+      }
+      case 'date':
+        return wrap(`<div class="box">${icon || svg('calendar')}<input type="date" value="${esc(def || '')}"${r.min ? ` min="${esc(r.min)}"` : ''}${r.max ? ` max="${esc(r.max)}"` : ''}></div>`);
+      case 'date-range': {
+        const v = Array.isArray(def) ? def : [];
+        return wrap(`<div class="range"><div class="box">${svg('calendar')}<input type="date" value="${esc(v[0] || '')}"></div><span class="muted">to</span><div class="box">${svg('calendar')}<input type="date" value="${esc(v[1] || '')}"></div></div>`);
+      }
+      default:
+        return '';
+    }
+  }
+
+  function bind(form) {
+    $$('[data-eye]', form).forEach(b => b.onclick = () => { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; });
+    $$('[data-step]', form).forEach(b => b.onclick = () => {
+      const n = $('input', b.parentElement), step = Number(n.step) || 1;
+      let v = (Number(n.value) || 0) + step * Number(b.dataset.step);
+      if (n.min !== '') v = Math.max(Number(n.min), v);
+      if (n.max !== '') v = Math.min(Number(n.max), v);
+      n.value = v;
+    });
+    $$('.sel', form).forEach(s => {
+      const r = rows[+s.closest('.f').dataset.i];
+      $('.box', s).onclick = e => { e.stopPropagation(); $$('.sel.open', form).forEach(o => o !== s && o.classList.remove('open')); s.classList.toggle('open'); };
+      $$('.dd div', s).forEach(o => o.onclick = () => {
+        $$('.dd div', s).forEach(x => x.classList.toggle('on', x === o));
+        const val = $('.val', s); val.textContent = o.textContent; val.classList.remove('ph');
+        s.dataset.k = o.dataset.k; s.classList.remove('open');
+        s.closest('.f').classList.remove('bad');
+      });
+      const opts = optList(r), k = opts.findIndex(o => o.value === r.default);
+      if (k >= 0) s.dataset.k = k;
+    });
+    form.addEventListener('click', e => { if (!e.target.closest('.sel')) $$('.sel.open', form).forEach(o => o.classList.remove('open')); });
+    $$('.tags button', form).forEach(b => b.onclick = () => b.classList.toggle('on'));
+    $$('.slider input', form).forEach(r => {
+      const sync = () => {
+        const p = ((r.value - r.min) / ((r.max - r.min) || 1)) * 100;
+        r.style.setProperty('--p', p + '%');
+        r.nextElementSibling.textContent = r.value;
+      };
+      r.oninput = sync; sync();
+    });
+    $$('.tog,.chk', form).forEach(t => t.onclick = () => { t.classList.toggle('on'); t.closest('.f').classList.remove('bad'); });
+    $$('.colors button', form).forEach(b => b.onclick = () => {
+      const c = b.parentElement;
+      $$('button', c).forEach(x => x.classList.toggle('on', x === b));
+      $('.hex', c).textContent = b.dataset.c.toUpperCase();
+    });
+    $$('input,textarea', form).forEach(el => el.addEventListener('input', () => el.closest('.f').classList.remove('bad')));
+    $$('.box input', form).forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); }));
+  }
+
+  function read(f, r) {
+    const t = f.dataset.t;
+    switch (t) {
+      case 'input': case 'textarea': { const v = $('input,textarea', f).value; return v === '' ? null : v; }
+      case 'number': { const v = $('input', f).value; return v === '' ? null : Number(v); }
+      case 'select': { const s = $('.sel', f); return s.dataset.k != null ? optList(r)[+s.dataset.k].value : null; }
+      case 'multi-select': { const opts = optList(r); return $$('.tags button', f).filter(b => b.classList.contains('on')).map(b => opts[+b.dataset.k].value); }
+      case 'slider': return Number($('input', f).value);
+      case 'toggle': return $('.tog', f).classList.contains('on');
+      case 'checkbox': return $('.chk', f).classList.contains('on');
+      case 'color': { const on = $('.colors button.on', f); return on ? on.dataset.c : null; }
+      case 'date': { const v = $('input', f).value; return v || null; }
+      case 'date-range': { const [a, b] = $$('input', f).map(x => x.value || null); return a || b ? [a, b] : null; }
+    }
+    return null;
+  }
+
+  function check(r, v) {
+    const empty = v == null || v === false || (Array.isArray(v) && (v.length === 0 || v.some(x => x == null)));
+    if (r.required && empty) return 'This field is required';
+    if (v == null) return null;
+    if (r.type === 'number') {
+      if (r.min != null && v < r.min) return `Must be at least ${r.min}`;
+      if (r.max != null && v > r.max) return `Must be at most ${r.max}`;
+    }
+    if ((r.type || 'input') === 'input' || r.type === 'textarea') {
+      if (r.min && String(v).length < r.min) return `At least ${r.min} characters`;
+    }
+    return null;
+  }
+
+  function submit() {
+    const form = $('.inp', modal);
+    if (!form) return;
+    const values = [];
+    let firstBad = null;
+    $$('.f', form).forEach(f => {
+      const i = +f.dataset.i, r = rows[i], v = read(f, r), e = check(r, v);
+      f.classList.toggle('bad', !!e);
+      $('.err', f).textContent = e || '';
+      if (e && !firstBad) firstBad = f;
+      values[i] = v;
+    });
+    if (firstBad) { firstBad.scrollIntoView({ block: 'nearest' }); return; }
+    UI.offEsc('input');
+    UI.post('input:submit', { values });
+  }
+  function cancel() { UI.offEsc('input'); UI.post('input:submit', { cancelled: true }); }
+
+  UI.on('input:open', d => {
+    rows = Array.isArray(d.rows) ? d.rows : [];
+    openModal(`
+      <div class="card inp" style="--rgb:${tone(d.color)}">
+        <div class="dhead">
+          <div class="ic">${svg(d.icon || 'edit', 'edit')}</div>
+          <div><div class="tt">${esc(d.heading || 'Input')}</div><div class="sub">${esc(d.description || '')}</div></div>
+        </div>
+        <div class="fields">${rows.map(field).join('')}</div>
+        <div class="btns">
+          ${d.cancel === false ? '' : `<button class="btn ghost" data-a="cancel">${esc(d.cancelLabel || 'Cancel')}</button>`}
+          <button class="btn solid" data-a="submit">${esc(d.submitLabel || 'Submit')}</button>
+        </div>
+      </div>`);
+    const form = $('.inp', modal);
+    bind(form);
+    $('[data-a="submit"]', form).onclick = submit;
+    const c = $('[data-a="cancel"]', form);
+    if (c) c.onclick = cancel;
+    UI.onEsc('input', () => { if (d.cancel !== false) cancel(); });
+    const first = $('.f:not(.dis) input:not([type=range]), .f:not(.dis) textarea', form);
+    if (first) setTimeout(() => first.focus(), 60);
+  });
+  UI.on('input:close', () => { UI.offEsc('input'); UI.hide(modal); });
+})();
+</script>
+<script>
+/* Context menu */
+(() => {
+  'use strict';
+  const { $, $$, esc, fmt, rgb, svg, tone } = UI;
+  const root = $('#context');
+
+  function meta(o) {
+    const list = Array.isArray(o.metadata) ? o.metadata : [];
+    if (!list.length && !o.image) return '';
+    const rows = list.map(m => `
+      <div class="mrow"><span>${esc(m.label)}</span>${m.value != null ? `<b>${esc(m.value)}</b>` : ''}</div>
+      ${m.progress != null ? `<div class="mbar"><i style="width:${Math.max(0, Math.min(100, m.progress))}%"></i></div>` : ''}`).join('');
+    return `<div class="meta"><div>${o.image ? `<img src="${esc(o.image)}" alt="">` : ''}${rows}</div></div>`;
+  }
+
+  function option(o, i) {
+    const cls = ['opt'];
+    if (o.disabled) cls.push('dis');
+    if (o.readOnly) cls.push('ro');
+    const style = [o.iconColor ? `--rgb:${rgb(o.iconColor)}` : '', o.progressColor ? `--prgb:${rgb(o.progressColor)}` : ''].filter(Boolean).join(';');
+    const end = [];
+    if (o.keybind) end.push(`<span class="key">${esc(o.keybind)}</span>`);
+    if (o.progress != null) end.push(`<span class="pv">${Math.round(o.progress)}%</span>`);
+    if (o.disabled) end.push(svg('lock'));
+    else if (o.arrow) end.push(svg('right'));
+    return `
+      <div class="${cls.join(' ')}" data-i="${i + 1}"${style ? ` style="${style}"` : ''}>
+        ${o.icon ? `<div class="ic sm">${svg(o.icon, 'dots')}</div>` : ''}
+        <div class="body">
+          <div class="ot">${esc(o.title || '')}</div>
+          ${o.description ? `<div class="od">${fmt(o.description)}</div>` : ''}
+          ${o.progress != null ? `<div class="mbar"><i style="width:${Math.max(0, Math.min(100, o.progress))}%"></i></div>` : ''}
+          ${meta(o)}
+        </div>
+        ${end.length ? `<div class="end">${end.join('')}</div>` : ''}
+      </div>`;
+  }
+
+  UI.on('context:open', d => {
+    root.className = 'pos-' + (UI.cfg.context?.position === 'left' ? 'left' : 'right');
+    UI.show(root, `
+      <div class="card ctx" style="--rgb:${tone(d.color)}">
+        <div class="chead">
+          ${d.canBack ? `<button class="back">${svg('left')}</button>` : ''}
+          ${d.icon ? `<div class="ic sm">${svg(d.icon, 'dots')}</div>` : ''}
+          <div><div class="tt">${esc(d.title || '')}</div><div class="sub">${esc(d.description || '')}</div></div>
+        </div>
+        <div class="list">${(d.options || []).map(option).join('')}</div>
+      </div>`);
+    const back = $('.back', root);
+    if (back) back.onclick = () => UI.post('context:back');
+    $$('.opt', root).forEach(el => el.onclick = () => {
+      if (el.classList.contains('dis') || el.classList.contains('ro')) return;
+      UI.post('context:select', { index: +el.dataset.i });
+    });
+    UI.onEsc('context', () => UI.post(d.canBack ? 'context:back' : 'context:close'));
+  });
+
+  UI.on('context:close', () => { UI.offEsc('context'); UI.hide(root); });
+})();
+</script>
+<script>
+/* List menu (keyboard only, state lives in Lua) */
+(() => {
+  'use strict';
+  const { $, esc, svg, tone } = UI;
+  const root = $('#list');
+  const POS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+  let menu = null;
+  let state = { selected: 1, scroll: [], checked: [] };
+
+  const valueOf = v => (v && typeof v === 'object' ? v : { label: String(v ?? '') });
+
+  function row(o, i) {
+    const n = i + 1, sel = n === state.selected;
+    let desc = o.description || '';
+    let right = '';
+    if (Array.isArray(o.values) && o.values.length) {
+      const v = valueOf(o.values[(state.scroll[i] || 1) - 1]);
+      if (v.description) desc = v.description;
+      right = `<div class="side">${svg('left')}<span class="v">${esc(v.label)}</span>${svg('right')}</div>`;
+    } else if (o.checkbox) {
+      right = `<div class="chk${state.checked[i] ? ' on' : ''}"><div class="bx">${svg('check')}</div></div>`;
+    } else if (o.progress != null) {
+      right = `<div class="mbar"><i style="width:${Math.max(0, Math.min(100, o.progress))}%"></i></div>`;
+    }
+    if (o.disabled) right += svg('lock');
+    const cls = ['lr'];
+    if (sel) cls.push('sel');
+    if (desc) cls.push('has-d');
+    if (o.disabled) cls.push('dis');
+    return `<div class="${cls.join(' ')}">${svg(o.icon || 'dots', 'dots')}<div class="lt">${esc(o.label || '')}</div>${right}<div class="ld">${esc(desc)}</div></div>`;
+  }
+
+  function render(animate) {
+    if (!menu) return;
+    const opts = menu.options || [];
+    const html = `
+      <div class="card lm" style="--rgb:${tone(menu.color)}">
+        <div class="lhead">
+          ${menu.icon ? `<div class="ic sm">${svg(menu.icon, 'dots')}</div>` : ''}
+          <div><div class="tt">${esc(menu.title || '')}</div><div class="sub">${esc(menu.subtitle || '')}</div></div>
+          <div class="count">${state.selected}/${opts.length}</div>
+        </div>
+        <div class="rows">${opts.map(row).join('')}</div>
+        <div class="lfoot hints">
+          <span><span class="key">↑</span><span class="key">↓</span>Navigate</span>
+          <span><span class="key">←</span><span class="key">→</span>Change</span>
+          <span><span class="key">↵</span>Select</span>
+          ${menu.canClose === false ? '' : '<span><span class="key">⌫</span>Close</span>'}
+        </div>
+      </div>`;
+    if (animate) UI.show(root, html); else root.innerHTML = html;
+    const sel = $('.lr.sel', root);
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }
+
+  UI.on('list:open', d => {
+    menu = d;
+    state = d.state || { selected: 1, scroll: [], checked: [] };
+    root.className = 'pos-' + (POS.includes(d.position) ? d.position : (UI.cfg.list?.position || 'top-left'));
+    render(true);
+  });
+  UI.on('list:state', s => { state = s; render(false); });
+  UI.on('list:close', () => { menu = null; UI.hide(root); });
+})();
+</script>
+<script>
+/* Radial menu */
+(() => {
+  'use strict';
+  const { $, $$, esc, ICONS } = UI;
+  const root = $('#radial');
+  const PER_PAGE = 6;
+  let menu = null, page = 0;
+
+  function pageItems() {
+    const items = menu.items || [];
+    if (items.length <= PER_PAGE) return items.map((it, i) => ({ ...it, index: i + 1 }));
+    const per = PER_PAGE - 1, pages = Math.ceil(items.length / per);
+    page = page % pages;
+    const slice = items.slice(page * per, page * per + per).map((it, i) => ({ ...it, index: page * per + i + 1 }));
+    slice.push({ label: 'More', description: `Page ${(page + 1) % pages + 1} of ${pages}`, icon: 'dots', more: true });
+    return slice;
+  }
+
+  function render(animate) {
+    const items = pageItems(), n = Math.max(items.length, 1), R1 = 62, R2 = 160, gap = n > 1 ? 1.6 : 0;
+    const pt = (r, a) => [r * Math.sin(a * Math.PI / 180), -r * Math.cos(a * Math.PI / 180)];
+    let html = '';
+    items.forEach((it, i) => {
+      const a0 = i * 360 / n - 180 / n + gap, a1 = (i + 1) * 360 / n - 180 / n - gap, mid = (a0 + a1) / 2;
+      const large = a1 - a0 > 180 ? 1 : 0;
+      const [x0, y0] = pt(R2, a0), [x1, y1] = pt(R2, a1), [x2, y2] = pt(R1, a1), [x3, y3] = pt(R1, a0);
+      const [ix, iy] = pt(108, mid);
+      let extra = '';
+      if (it.badge) {
+        const b = String(it.badge).slice(0, 3);
+        extra += `<circle class="badge" cx="${ix + 13}" cy="${iy - 20}" r="${b.length > 1 ? 9 : 8}"/><text class="badge-t" x="${ix + 13}" y="${iy - 16.5}">${esc(b)}</text>`;
+      }
+      if (it.progress != null) {
+        const c = 2 * Math.PI * 17, p = Math.max(0, Math.min(100, it.progress));
+        extra += `<circle cx="${ix}" cy="${iy - 8}" r="17" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="3"/>
+          <circle cx="${ix}" cy="${iy - 8}" r="17" fill="none" stroke="rgb(var(--ok))" stroke-width="3" stroke-linecap="round" stroke-dasharray="${c * p / 100} ${c}" transform="rotate(-90 ${ix} ${iy - 8})"/>`;
+      }
+      const path = n === 1
+        ? `M0,${-R2} A${R2},${R2} 0 1 1 -0.01,${-R2} Z M0,${-R1} A${R1},${R1} 0 1 0 0.01,${-R1} Z`
+        : `M${x0},${y0} A${R2},${R2} 0 ${large} 1 ${x1},${y1} L${x2},${y2} A${R1},${R1} 0 ${large} 0 ${x3},${y3} Z`;
+      html += `<g class="wedge${it.readOnly ? ' ro' : ''}" data-k="${i}">
+        <path d="${path}" fill-rule="evenodd"/>
+        <svg class="wi" x="${ix - 11}" y="${iy - 19}" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[it.icon] || ICONS.dots}</svg>
+        ${extra}<text x="${ix}" y="${iy + 18}">${esc(it.label || '')}</text></g>`;
+    });
+
+    const wheel = `<div class="radial"><svg class="wheel" viewBox="-170 -170 340 340">${html}</svg>
+      <div class="center"><div><div class="ct"></div><div class="cd"></div></div></div></div>`;
+    if (animate) UI.show(root, wheel); else root.innerHTML = wheel;
+
+    const ct = $('.ct', root), cd = $('.cd', root);
+    const idle = () => {
+      ct.textContent = menu.sub ? 'Back' : 'Close';
+      cd.textContent = menu.title ? menu.title : (menu.sub ? '' : `${UI.cfg.radial?.key || 'Z'} to toggle`);
+    };
+    idle();
+    $$('.wedge', root).forEach(g => {
+      const it = items[+g.dataset.k];
+      g.onmouseenter = () => { ct.textContent = it.label || ''; cd.textContent = it.description || ''; };
+      g.onmouseleave = idle;
+      g.onclick = () => {
+        if (it.more) { page++; render(false); return; }
+        if (!it.readOnly) UI.post('radial:select', { index: it.index });
+      };
+    });
+    $('.center', root).onclick = back;
+  }
+
+  const back = () => UI.post(menu && menu.sub ? 'radial:back' : 'radial:close');
+
+  UI.on('radial:open', d => {
+    const animate = !menu;
+    if (!menu || d.sub !== menu.sub || d.title !== menu.title) page = 0;
+    menu = d;
+    render(animate);
+    UI.onEsc('radial', () => UI.post('radial:close'));
+  });
+  UI.on('radial:close', () => { menu = null; page = 0; UI.offEsc('radial'); UI.hide(root); });
+
+  root.addEventListener('contextmenu', e => { e.preventDefault(); if (menu) back(); });
+  document.addEventListener('keydown', e => {
+    if (menu && e.key.toUpperCase() === String(UI.cfg.radial?.key || 'Z').toUpperCase()) UI.post('radial:close');
+  });
+})();
+</script>
+<script>
+/* Text UI */
+(() => {
+  'use strict';
+  const { $, esc, svg, tone } = UI;
+  const root = $('#textui');
+  const POS = ['right-center', 'left-center', 'top-center', 'bottom-center'];
+
+  UI.on('text:show', d => {
+    const pos = POS.includes(d.position) ? d.position : (UI.cfg.textui?.position || 'right-center');
+    const style = `--rgb:${tone(d.color)}`;
+    let html;
+    if (Array.isArray(d.options) && d.options.length) {
+      html = `<div class="card tui opts" style="${style}">
+        ${d.title ? `<div class="th"><div class="tt">${esc(d.title)}</div><div class="sub">${esc(d.description || '')}</div></div>` : ''}
+        ${d.options.map(o => `<div class="tr">${o.key ? `<span class="key">${esc(o.key)}</span>` : ''}${esc(o.label || '')}${o.icon ? svg(o.icon) : ''}</div>`).join('')}
+      </div>`;
+    } else if (!d.description && !d.icon) {
+      html = `<div class="card tui small" style="${style}">${d.key ? `<span class="key">${esc(d.key)}</span>` : ''}<span class="tt" style="font-size:13px">${esc(d.title || '')}</span></div>`;
+    } else {
+      html = `<div class="card tui" style="${style}">
+        ${d.icon ? `<div class="ic sm">${svg(d.icon, 'info')}</div>` : (d.key ? `<span class="key ac">${esc(d.key)}</span>` : '')}
+        <div><div class="tt">${esc(d.title || '')}</div><div class="sub">${esc(d.description || '')}</div></div>
+        ${d.icon && d.key ? `<span class="key ac" style="margin-left:6px">${esc(d.key)}</span>` : ''}
+      </div>`;
+    }
+    const wasShown = UI.isShown(root) && root.className.includes('pos-' + pos);
+    root.className = 'pos-' + pos + (wasShown ? ' show' : '');
+    if (wasShown) root.innerHTML = html; else UI.show(root, html);
+  });
+
+  UI.on('text:hide', () => UI.hide(root));
+})();
+</script>
+<script>
+/* Mini games: skill check, signal breach, pattern lock */
+(() => {
+  'use strict';
+  const { $, $$, svg } = UI;
+  const root = $('#minigame');
+  let stop = null;      // cleanup for the running game
+  let finished = false;
+
+  const keyName = e => (e.key === ' ' ? 'SPACE' : e.key.length === 1 ? e.key.toUpperCase() : e.key.toUpperCase());
+
+  function frame(cls, icon, title, sub, stage, footer = '') {
+    return `<div class="card mg ${cls}">
+      <div class="mh"><div class="ic sm">${svg(icon)}</div><div><div class="tt">${title}</div><div class="sub">${sub}</div></div></div>
+      <div class="stage">${stage}</div>
+      ${footer}
+      <div class="mf"><div class="status"></div><div class="rounds"></div></div>
+    </div>`;
+  }
+
+  function finish(success, text) {
+    if (finished) return;
+    finished = true;
+    if (stop) stop();
+    stop = null;
+    UI.offEsc('minigame');
+    const card = $('.mg', root);
+    if (card) {
+      card.classList.add(success ? 'win' : 'lose');
+      $('.status', card).textContent = text || (success ? 'Success' : 'Failed');
+    }
+    setTimeout(() => { UI.hide(root); UI.post('minigame:done', { success }); }, 650);
+  }
+
+  function begin(html) {
+    if (stop) stop();
+    finished = false;
+    UI.show(root, html);
+    UI.onEsc('minigame', () => finish(false, 'Cancelled'));
+  }
+
+  /* ---------------- skill check ---------------- */
+  function skill(p) {
+    const rounds = p.rounds && p.rounds.length ? p.rounds : [{ zone: 40, speed: 260 }];
+    const keys = p.keys && p.keys.length ? p.keys.map(k => String(k).toUpperCase()) : ['E'];
+    begin(frame('', 'target', 'Skill Check', 'Press the key in the zone', `
+      <div class="sc"><svg viewBox="-60 -60 120 120">
+        <circle class="trk" r="48"></circle><circle class="zone" r="48"></circle>
+        <line class="needle" x1="0" y1="-30" x2="0" y2="-56"></line></svg>
+        <div class="hub"><span class="key ac"></span></div></div>`));
+    const card = $('.mg', root), zone = $('.zone', card), needle = $('.needle', card), keyEl = $('.hub .key', card);
+    const status = $('.status', card), pips = $('.rounds', card);
+    const C = 2 * Math.PI * 48;
+    const results = [];
+    let round = 0, angle = 0, zStart = 0, zSize = 0, key = 'E', last = 0, raf;
+    const drawPips = () => { pips.innerHTML = rounds.length > 1 ? rounds.map((_, i) => `<i class="${results[i] === true ? 'done' : results[i] === false ? 'fail' : ''}"></i>`).join('') : ''; };
+    function next() {
+      const r = rounds[round];
+      zSize = Math.max(5, Math.min(180, r.zone || 40));
+      zStart = 120 + Math.random() * (220 - zSize);
+      angle = 0;
+      key = keys[Math.floor(Math.random() * keys.length)];
+      keyEl.textContent = key === 'SPACE' ? '␣' : key;
+      zone.setAttribute('stroke-dasharray', `${C * zSize / 360} ${C}`);
+      zone.setAttribute('transform', `rotate(${zStart - 90})`);
+      status.textContent = rounds.length > 1 ? `Round ${round + 1} of ${rounds.length}` : `Press ${key} in the zone`;
+      drawPips();
+    }
+    function hit(ok) {
+      results[round] = ok; drawPips();
+      if (!ok) return finish(false);
+      round++;
+      if (round >= rounds.length) return finish(true);
+      next();
+    }
+    function tick(t) {
+      angle += (rounds[round].speed || 260) * Math.min(0.05, Math.max(0, (t - last) / 1000)); last = t;
+      needle.setAttribute('transform', `rotate(${angle})`);
+      if (angle > zStart + zSize + 8) return hit(false);
+      raf = requestAnimationFrame(tick);
+    }
+    const onKey = e => {
+      const k = keyName(e);
+      if (k === 'ESCAPE' || e.repeat) return;
+      e.preventDefault();
+      hit(k === key && angle >= zStart && angle <= zStart + zSize);
+    };
+    document.addEventListener('keydown', onKey);
+    stop = () => { cancelAnimationFrame(raf); document.removeEventListener('keydown', onKey); };
+    next();
+    last = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
+
+  /* ---------------- signal breach ---------------- */
+  function breach(p) {
+    const n = Math.max(1, p.nodes || 4);
+    const pool = p.keys && p.keys.length ? p.keys.map(k => String(k).toUpperCase()) : ['W', 'A', 'S', 'D'];
+    const keys = Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]);
+    begin(frame('', 'signal', 'Signal Breach', 'Hit the key inside the window', `
+      <div class="sb"><div class="nodes"></div><div class="sbtrack"><div class="win"></div><div class="cur"></div></div></div>`));
+    const card = $('.mg', root);
+    card.style.setProperty('--rgb', 'var(--purple)');
+    const nodesEl = $('.nodes', card), win = $('.win', card), cur = $('.cur', card), status = $('.status', card);
+    let idx = 0, pos = 0, dir = 1, sweeps = 0, speed = p.speed || 70, wSize = p.window || 20, wPos = 0, last = 0, raf;
+    const done = [];
+    const maxSweeps = p.maxSweeps || 4;
+    function draw(fail) {
+      nodesEl.innerHTML = keys.map((k, i) => (i ? `<div class="link${done[i - 1] && done[i] ? ' ok' : ''}"></div>` : '') +
+        `<div class="node${done[i] ? ' ok' : ''}${i === idx && !finished ? ' cur' : ''}${fail === i ? ' no' : ''}">${k === 'SPACE' ? '␣' : k}</div>`).join('');
+      status.textContent = `Node ${Math.min(idx + 1, n)} of ${n}`;
+    }
+    function place() { wPos = 4 + Math.random() * (92 - wSize); win.style.left = wPos + '%'; win.style.width = wSize + '%'; }
+    function fail() { cancelAnimationFrame(raf); finished = false; draw(idx); finish(false, 'Signal lost'); }
+    function tick(t) {
+      pos += dir * speed * Math.min(0.05, Math.max(0, (t - last) / 1000)); last = t;
+      if (pos >= 100 && dir > 0) { pos = 100; dir = -1; sweeps++; }
+      if (pos <= 0 && dir < 0) { pos = 0; dir = 1; sweeps++; }
+      cur.style.left = pos + '%';
+      if (sweeps >= maxSweeps) return fail();
+      raf = requestAnimationFrame(tick);
+    }
+    const onKey = e => {
+      const k = keyName(e);
+      if (k === 'ESCAPE' || e.repeat) return;
+      e.preventDefault();
+      const inside = pos >= wPos && pos <= wPos + wSize;
+      if (k !== keys[idx]) { if (p.failOnWrongKey !== false) fail(); return; }
+      if (!inside) return fail();
+      done[idx] = true;
+      UI.post('minigame:node', { index: idx + 1 });
+      idx++;
+      if (idx >= n) { draw(); return finish(true, 'Breach complete'); }
+      speed *= p.speedUp || 1.15;
+      wSize = Math.max(4, wSize * (p.shrink || 0.85));
+      sweeps = 0;
+      place(); draw();
+    };
+    document.addEventListener('keydown', onKey);
+    stop = () => { cancelAnimationFrame(raf); document.removeEventListener('keydown', onKey); };
+    place(); draw();
+    last = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
+
+  /* ---------------- pattern lock ---------------- */
+  function pattern(p) {
+    const size = Math.max(2, Math.min(6, p.grid || 3)), len = Math.max(1, p.length || 5);
+    const show = p.showSpeed || 420, time = p.timeout || 6000, totalRounds = Math.max(1, p.rounds || 1);
+    begin(frame('', 'grid', 'Pattern Lock', 'Watch, then repeat the pattern',
+      `<div class="pl locked" style="grid-template-columns:repeat(${size},52px)">${Array.from({ length: size * size }, (_, i) => `<button data-i="${i}"></button>`).join('')}</div>`,
+      '<div class="mbar ptimer"><i style="width:100%"></i></div>'));
+    const card = $('.mg', root);
+    card.style.setProperty('--rgb', 'var(--warn)');
+    const grid = $('.pl', card), timer = $('.ptimer i', card), status = $('.status', card), pips = $('.rounds', card);
+    const btns = $$('button', grid);
+    let timers = [], raf, seq = [], step = 0, accepting = false, round = 0;
+    const results = [];
+    const drawPips = () => { pips.innerHTML = totalRounds > 1 ? Array.from({ length: totalRounds }, (_, i) => `<i class="${results[i] === true ? 'done' : results[i] === false ? 'fail' : ''}"></i>`).join('') : ''; };
+    const clear = () => { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); };
+    function play() {
+      clear(); accepting = false; grid.classList.add('locked'); timer.style.width = '100%';
+      status.textContent = 'Watch the pattern…'; drawPips();
+      seq = [];
+      while (seq.length < len) { const r = Math.floor(Math.random() * size * size); if (r !== seq[seq.length - 1]) seq.push(r); }
+      seq.forEach((c, k) => {
+        timers.push(setTimeout(() => btns[c].classList.add('lit'), 400 + k * show));
+        timers.push(setTimeout(() => btns[c].classList.remove('lit'), 400 + k * show + show * 0.7));
+      });
+      timers.push(setTimeout(() => {
+        accepting = true; step = 0; grid.classList.remove('locked');
+        status.textContent = `Repeat the pattern · 0 of ${len}`;
+        const t0 = performance.now();
+        const tick = t => {
+          const left = 1 - (t - t0) / time;
+          timer.style.width = Math.max(0, left) * 100 + '%';
+          if (left <= 0) { results[round] = false; drawPips(); return finish(false, 'Out of time'); }
+          raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+      }, 400 + len * show + 150));
+    }
+    btns.forEach(b => b.onclick = () => {
+      if (!accepting) return;
+      const i = +b.dataset.i;
+      b.classList.add('lit');
+      if (seq[step] !== i) { accepting = false; results[round] = false; drawPips(); return finish(false, 'Wrong pattern'); }
+      setTimeout(() => b.classList.remove('lit'), 200);
+      step++;
+      status.textContent = `Repeat the pattern · ${step} of ${len}`;
+      if (step >= len) {
+        accepting = false; results[round] = true; round++;
+        if (round >= totalRounds) { drawPips(); return finish(true, 'Unlocked'); }
+        timers.push(setTimeout(play, 500));
+      }
+    });
+    stop = clear;
+    play();
+  }
+
+  UI.on('minigame:start', d => {
+    const p = d.params || {};
+    if (d.kind === 'skill') skill(p);
+    else if (d.kind === 'breach') breach(p);
+    else if (d.kind === 'pattern') pattern(p);
+  });
+  UI.on('minigame:cancel', () => {
+    if (stop) stop();
+    stop = null; finished = true;
+    UI.offEsc('minigame');
+    UI.hide(root);
+  });
+})();
+</script>
+<script>
+/* ---------- fake Lua side ---------- */
+const E = UI.emit;
+const toast = (message, type = 'info') => E('notify', { type, message, duration: 4000 });
+
+E('init', {
+  scale: 1, accent: '#2dd4bf',
+  notify: {
+    position: 'top-right', offset: { x: 24, y: 24 }, maxVisible: 5,
+    types: {
+      success: { title: 'Success', color: '#22c38a', icon: 'check' }, error: { title: 'Error', color: '#ef4b5a', icon: 'x' },
+      warning: { title: 'Warning', color: '#f5a524', icon: 'warning' }, info: { title: 'Info', color: '#3ba7ff', icon: 'info' },
+      announce: { title: 'Announcement', color: '#ffffff', icon: 'announce', tag: 'Server Announcement' }, sms: { title: 'New Message', color: '#a77bf3', icon: 'sms' },
+    },
+    departments: {
+      police: { label: 'POLICE', icon: 'badge', tint: 'rgba(9, 18, 42, 0.92)', strip: 'lightbar', colors: ['#2f6bff', '#ef4b5a'] },
+      safr: { label: 'SAFR', icon: 'fire', tint: 'rgba(38, 13, 10, 0.92)', strip: 'stripes', colors: ['#ef4b5a', '#ffb020'] },
+    },
+    priorities: [{ label: 'Priority 1', short: 'P1', color: '#ef4b5a', pulse: true }, { label: 'Priority 2', short: 'P2', color: '#f5a524' }, { label: 'Priority 3', short: 'P3', color: '#3ba7ff' }],
+    flash: { enabled: true, maxPriority: 2, speed: 500, strip: true, edge: true, glow: true },
+    priorityIndicator: { pips: true, chip: true },
+  },
+  progress: { position: 'bottom', cancelKey: 'X' }, dialog: { backdrop: true }, context: { position: 'right' },
+  list: { position: 'top-left' }, radial: { key: 'Z' }, textui: { position: 'right-center' },
+});
+
+let progTimer = null, progActive = false;
+function progress(d) {
+  clearTimeout(progTimer); progActive = true;
+  E('progress:start', { canCancel: true, ...d });
+  progTimer = setTimeout(() => { progActive = false; E('progress:end', { cancelled: false }); toast('Done.', 'success'); }, d.duration);
+}
+document.addEventListener('keydown', e => {
+  if (progActive && e.key.toLowerCase() === 'x') { clearTimeout(progTimer); progActive = false; E('progress:end', { cancelled: true }); }
+});
+
+/* context menus */
+const menus = {
+  garage: { title: 'Legion Square Garage', description: 'Lot B', icon: 'garage', options: [
+    { title: 'Retrieve Vehicle', description: '3 vehicles stored', icon: 'car', arrow: true, menu: 'vehicles' },
+    { title: 'Fuel Level', description: 'Bison 4x4', icon: 'fuel', iconColor: '#22c38a', progress: 65, progressColor: '#22c38a' },
+    { title: 'Vehicle Info', description: 'Hover for details', icon: 'info', metadata: [{ label: 'Plate', value: 'UnitLink 001' }, { label: 'Engine', value: '92%', progress: 92 }, { label: 'Body', value: '78%', progress: 78 }] },
+    { title: 'Give Keys', description: 'Share with a nearby player', icon: 'key', keybind: 'K' },
+    { title: 'Impound Lot', description: 'Requires police access', icon: 'ban', disabled: true },
+    { title: 'Lot B · 12 spaces free', icon: 'pin', readOnly: true },
+  ]},
+  vehicles: { title: 'Retrieve Vehicle', description: '3 stored', icon: 'car', parent: 'garage', options: [
+    { title: 'Bison 4x4', description: 'UnitLink 001', icon: 'car', metadata: [{ label: 'Fuel', value: '65%' }, { label: 'Mileage', value: '12,480 mi' }] },
+    { title: 'Sandking XL', description: 'CREEK 22', icon: 'car', metadata: [{ label: 'Fuel', value: '30%' }, { label: 'Mileage', value: '48,102 mi' }] },
+    { title: 'Rebla GTS', description: 'Needs repairs', icon: 'car', iconColor: '#f5a524', disabled: true },
+  ]},
+};
+let ctxOpen = null;
+const openCtx = id => { ctxOpen = id; const m = menus[id]; E('context:open', { ...m, canBack: !!m.parent }); };
+
+/* list menu */
+const listMenu = { title: "Benny's Customs", subtitle: 'Bison 4x4', icon: 'spray', options: [
+  { label: 'Respray', icon: 'spray', description: 'Primary color', values: ['Red', 'Forest Green', 'Midnight Blue', 'Matte Black', 'White'] },
+  { label: 'Wheels', icon: 'wheel', values: [{ label: 'Stock', description: 'Factory wheels' }, { label: 'Rugged', description: 'Off-road rims' }, { label: 'Beadlock', description: 'For rock crawling' }] },
+  { label: 'Engine', icon: 'engine', description: 'Level 2 of 4', progress: 50 },
+  { label: 'Neon Kit', icon: 'light', description: 'Underglow lights', checkbox: true },
+  { label: 'Window Tint', icon: 'sun', values: ['None', 'Light', 'Dark', 'Limo'] },
+  { label: 'Turbo', icon: 'turbo', description: 'Requires engine level 3', disabled: true },
+  { label: 'Apply Changes', icon: 'check', description: 'Save and close' },
+]};
+let listOpen = false, ls = null;
+document.addEventListener('keydown', e => {
+  if (!listOpen) return;
+  const o = listMenu.options, n = o.length, s = ls, cur = o[s.selected - 1];
+  if (e.key === 'ArrowDown') s.selected = s.selected % n + 1;
+  else if (e.key === 'ArrowUp') s.selected = (s.selected - 2 + n) % n + 1;
+  else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && cur.values && !cur.disabled) {
+    const d = e.key === 'ArrowRight' ? 1 : -1, len = cur.values.length;
+    s.scroll[s.selected - 1] = (s.scroll[s.selected - 1] - 1 + d + len) % len + 1;
+  } else if (e.key === 'Enter' && !cur.disabled) {
+    if (cur.checkbox) s.checked[s.selected - 1] = !s.checked[s.selected - 1];
+    else { listOpen = false; E('list:close'); toast(`Selected **${cur.label}**.`, 'success'); return; }
+  } else if (e.key === 'Backspace' || e.key === 'Escape') { listOpen = false; E('list:close'); return; }
+  else return;
+  e.preventDefault(); E('list:state', s);
+});
+
+/* radial */
+const radials = {
+  main: [
+    { label: 'Vehicle', icon: 'car', description: 'Doors, engine…', menu: 'vehicle' },
+    { label: 'Emotes', icon: 'smile', description: 'Play an emote' },
+    { label: 'Clothing', icon: 'shirt', description: 'Toggle items' },
+    { label: 'Phone', icon: 'phone', description: '3 unread', badge: 3 },
+    { label: 'Fuel', icon: 'fuel', description: '65% left', progress: 65, readOnly: true },
+    { label: 'Walk Style', icon: 'walk', description: 'Change how you walk' },
+    { label: 'Map', icon: 'map', description: 'Set a waypoint' },
+  ],
+  vehicle: [
+    { label: 'Engine', icon: 'engine', description: 'Toggle engine' }, { label: 'Doors', icon: 'door', description: 'Open / close' },
+    { label: 'Windows', icon: 'window', description: 'Roll up / down' }, { label: 'Interior', icon: 'light', description: 'Dome light' },
+    { label: 'Lock', icon: 'lock', description: 'Lock vehicle' },
+  ],
+};
+let radialStack = [];
+const renderRadial = () => { const id = radialStack[radialStack.length - 1] || 'main'; E('radial:open', { items: radials[id], sub: id !== 'main', title: id === 'main' ? null : 'Vehicle' }); };
+
+/* answers coming back from the NUI */
+UI.mock = (name, d) => {
+  switch (name) {
+    case 'alert:close': E('alert:close'); toast(`Alert result: **${d.result}**`); break;
+    case 'input:submit': E('input:close'); d.cancelled ? toast('Form cancelled.', 'warning') : toast('Values: ' + JSON.stringify(d.values), 'success'); break;
+    case 'context:select': {
+      const o = menus[ctxOpen].options[d.index - 1];
+      if (o.menu) openCtx(o.menu); else { E('context:close'); ctxOpen = null; toast(`Selected **${o.title}**.`, 'success'); }
+      break;
+    }
+    case 'context:back': { const p = menus[ctxOpen].parent; if (p) openCtx(p); else { E('context:close'); ctxOpen = null; } break; }
+    case 'context:close': E('context:close'); ctxOpen = null; break;
+    case 'radial:select': {
+      const id = radialStack[radialStack.length - 1] || 'main', it = radials[id][d.index - 1];
+      if (it.menu) { radialStack.push(it.menu); renderRadial(); } else { radialStack = []; E('radial:close'); toast(`Radial: **${it.label}**`, 'success'); }
+      break;
+    }
+    case 'radial:back': radialStack.pop(); renderRadial(); break;
+    case 'radial:close': radialStack = []; E('radial:close'); break;
+    case 'minigame:done': toast(d.success ? 'Mini game passed.' : 'Mini game failed.', d.success ? 'success' : 'error'); break;
+  }
+};
+
+const textSamples = [
+  { key: 'E', title: 'Open Garage', description: 'Legion Square · Lot B' },
+  { key: 'E', title: 'Refuel Vehicle', description: 'Pump 3', icon: 'fuel', color: '#22c38a' },
+  { title: 'Gas Station', description: 'Route 68', options: [{ key: 'E', label: 'Refuel', icon: 'fuel' }, { key: 'G', label: 'Jerry Can', icon: 'box' }, { key: 'H', label: 'Car Wash', icon: 'drop' }] },
+  { key: 'E', title: 'Talk' },
+];
+let textIdx = -1;
+
+const demos = {
+  notify() {
+    const list = [
+      () => E('notify', { type: 'success', message: 'Vehicle stored in **Legion Square Garage**.', duration: 6000 }),
+      () => E('notify', { type: 'error', message: "You can't do that right now.", duration: 6000 }),
+      () => E('notify', { type: 'warning', message: 'Your fuel is running low.', duration: 6000 }),
+      () => E('notify', { type: 'info', message: 'Press **E** to open the menu.', duration: 6000 }),
+      () => E('dispatch', { dept: 'police', code: '10-31', title: 'Robbery in Progress', message: 'Silent alarm at the general store.', priority: 1, location: 'Main St', duration: 9000 }),
+    ];
+    list.forEach((fn, i) => setTimeout(fn, i * 250));
+  },
+  progress: () => progress({ duration: 5000, label: 'Repairing Engine', description: 'Keep still while you work', icon: 'wrench' }),
+  steps: () => progress({ duration: 6000, label: 'Crafting Lockpick', icon: 'box', color: '#a77bf3', steps: ['Cutting metal', 'Shaping pins', 'Filing edges', 'Assembling'] }),
+  alert: () => E('alert:open', {
+    header: 'Scrap vehicle?', subheader: "This can't be undone", content: 'You are about to scrap your **Bison 4x4**.', type: 'danger', icon: 'warning',
+    callout: { type: 'warning', label: 'Heads up', text: 'Anything left in the trunk will be lost.' }, labels: { confirm: 'Scrap Vehicle', cancel: 'Keep It' },
+  }),
+  input: () => E('input:open', {
+    heading: 'Register Vehicle', description: 'Fill out the DMV form', icon: 'edit', rows: [
+      { type: 'input', label: 'Plate', placeholder: 'e.g. UnitLink 001', icon: 'tag', required: true, max: 8, description: 'Up to 8 characters' },
+      { type: 'input', label: 'PIN', icon: 'lock', password: true, default: '1234' },
+      { type: 'number', label: 'Spare keys', min: 0, max: 5, default: 1 },
+      { type: 'select', label: 'Garage', icon: 'garage', options: [{ value: 'lotA', label: 'Lot A' }, { value: 'lotB', label: 'Lot B' }, { value: 'barn', label: 'Barn' }], default: 'lotB' },
+      { type: 'multi-select', label: 'Extras', options: ['Tracker', 'Roadside', 'Tint permit'], default: ['Tracker'] },
+      { type: 'slider', label: 'Window tint', min: 0, max: 100, step: 5, default: 35 },
+      { type: 'color', label: 'Primary color', default: '#3ba7ff' },
+      { type: 'date', label: 'Registration date' },
+      { type: 'date-range', label: 'Coverage' },
+      { type: 'textarea', label: 'Notes', placeholder: 'Anything the DMV should know?' },
+      { type: 'toggle', label: 'Auto-renew', description: 'Renew when it expires', default: true },
+      { type: 'checkbox', label: 'I agree to the DMV terms', required: true },
+    ],
+  }),
+  context: () => openCtx('garage'),
+  list() { ls = { selected: 1, scroll: listMenu.options.map(o => (o.values ? 1 : 0)), checked: listMenu.options.map(() => false) }; listOpen = true; E('list:open', { ...listMenu, state: ls }); },
+  radial() { radialStack = []; renderRadial(); },
+  text() { textIdx = (textIdx + 1) % (textSamples.length + 1); textIdx === textSamples.length ? E('text:hide') : E('text:show', textSamples[textIdx]); },
+  skill: () => E('minigame:start', { kind: 'skill', params: { rounds: [{ zone: 50, speed: 200 }, { zone: 40, speed: 260 }, { zone: 25, speed: 350 }], keys: ['E', 'Q'] } }),
+  breach: () => E('minigame:start', { kind: 'breach', params: { nodes: 4, window: 20, speed: 70, speedUp: 1.15, shrink: 0.85, failOnWrongKey: true, maxSweeps: 4, keys: ['W', 'A', 'S', 'D'] } }),
+  pattern: () => E('minigame:start', { kind: 'pattern', params: { grid: 3, length: 5, showSpeed: 420, timeout: 6000, rounds: 1 } }),
+};
+document.querySelectorAll('.pp [data-t]').forEach(b => b.onclick = () => { b.blur(); demos[b.dataset.t](); });
+</script>
+</body>
+</html>

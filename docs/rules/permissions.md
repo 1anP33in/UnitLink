@@ -1,19 +1,19 @@
 # Permissions & Access
 
-Permissions follow the **character**, not the account. They're managed in the tsrp-core dashboard (`/tsrp`).
+Permissions follow the **character**, not the account. They're managed in the UnitLink-Core dashboard (`/ulcore`).
 
-## Going on duty (tsrp-police)
+## Going on duty (UnitLink-Police)
 
 | Department | Go on duty | Supervisor | Group to assign |
 |---|---|---|---|
-| SASP | `tsrp.sasp.duty` | `tsrp.sasp.supervisor` | `sasp` / `sasp_supervisor` / `sasp_command` |
-| BCSO | `tsrp.bcso.duty` | `tsrp.bcso.supervisor` | `bcso` / … |
-| LSP | `tsrp.lsp.duty` | `tsrp.lsp.supervisor` | `lsp` / … |
-| DHS | `tsrp.dhs.duty` | `tsrp.dhs.supervisor` | `dhs` / … |
-| SAFD | `tsrp.safd.duty` | `tsrp.safd.supervisor` | `safd` / … |
-| FAA | `tsrp.faa.duty` | `tsrp.faa.supervisor` | `faa` / … |
+| SASP | `unitlink.sasp.duty` | `unitlink.sasp.supervisor` | `sasp` / `sasp_supervisor` / `sasp_command` |
+| BCSO | `unitlink.bcso.duty` | `unitlink.bcso.supervisor` | `bcso` / … |
+| LSP | `unitlink.lsp.duty` | `unitlink.lsp.supervisor` | `lsp` / … |
+| DHS | `unitlink.dhs.duty` | `unitlink.dhs.supervisor` | `dhs` / … |
+| SAFD | `unitlink.safd.duty` | `unitlink.safd.supervisor` | `safd` / … |
+| FAA | `unitlink.faa.duty` | `unitlink.faa.supervisor` | `faa` / … |
 
-`tsrp.police.supervisor` (every LEO supervisor and LEO High Command) works across all departments.
+`unitlink.police.supervisor` (every LEO supervisor and LEO High Command) works across all departments.
 
 ## Opening UnitLink
 
@@ -27,4 +27,4 @@ Every UnitLink request is checked again on the server: on duty, CAD access, char
 
 ## Discord roles
 
-tsrp-core can give groups based on Discord roles (`config/discord.lua`). The bot token is set in `server.cfg` as `tsrp_discord_token`.
+UnitLink-Core can give groups based on Discord roles (`config/discord.lua`). The bot token is set in `server.cfg` as `unitlink_discord_token`.

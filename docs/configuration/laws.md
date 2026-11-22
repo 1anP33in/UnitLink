@@ -1,6 +1,6 @@
 # Editing the Laws
 
-The Tropical State code is `Config.Laws` in `unitlink/config.lua`. Each line is one offense:
+The San Andreas Penal Code is `Config.Laws` in `UnitLink-CAD/config.lua`. Each line is one offense:
 
 ```lua
 { code = '2-08', offense = 'Driving Under the Influence', class = 'M', points = 6,
@@ -21,4 +21,4 @@ The Tropical State code is `Config.Laws` in `unitlink/config.lua`. Each line is 
 * **Felonies** (`F`) can never be put on a citation.
 * Use **aliases** for the short forms officers actually type.
 * Keep codes unique. Forms find charges by their code.
-* Reload with `ensure unitlink`.
+* Reload with `ensure UnitLink-CAD`.

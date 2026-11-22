@@ -12,4 +12,4 @@ By default only **supervisors** can set it (`Config.Signal100SupervisorOnly = tr
 
 ## Panic
 
-**Panic** sends the tsrp-police panic: an urgent card goes to every on-duty unit, with your location, and a red area appears on their map for 2 minutes. It works the same as `/panic`.
+**Panic** sends the UnitLink-Police panic: an urgent card goes to every on-duty unit, with your location, and a red area appears on their map for 2 minutes. It works the same as `/panic`.

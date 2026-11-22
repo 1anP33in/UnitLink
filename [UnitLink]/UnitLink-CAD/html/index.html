@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>UnitLink</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="tablet">
+ <div class="win">
+  <div class="menubar">
+    <span>File</span><span>View</span><span>Tools</span><span>Help</span>
+    <span class="title" id="winTitle">CAD</span>
+    <span class="brand" id="brand">UNITLINK</span>
+    <span class="x" id="closeBtn" title="Close (Esc)">✕ Close</span>
+  </div>
+  <div class="toolbar" id="toolbar"></div>
+  <div class="quick" id="quick"></div>
+
+  <div class="screens">
+    <!-- CAD -->
+    <section class="screen col on" id="s-cad">
+      <div class="panel calls">
+        <div class="phead"><h2>Active Calls</h2>
+          <div class="tools"><div class="pill"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="callSearch" placeholder="Search..."></div><button class="plus" id="newCallPlus" title="New call">+</button></div></div>
+        <div class="grid"><table><thead><tr><th>Call#</th><th>Nature</th><th>Location</th><th>City</th><th>County</th><th>Pr.</th><th>Status</th><th>Units</th><th>Age</th></tr></thead><tbody id="callsBody"></tbody></table></div>
+      </div>
+      <div class="panel units">
+        <div class="phead"><h2>Units</h2>
+          <div class="tools"><select class="fin" id="agencyFilter" style="width:auto;padding:3px 6px;font-size:11.5px"><option value="">All Agencies</option></select><div class="pill"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="unitSearch" placeholder="Search..."></div></div></div>
+        <div class="grid"><table><thead><tr><th>Officer</th><th>Unit</th><th>Status</th><th>Call#</th><th>Agency</th><th>Location</th><th>Description</th></tr></thead><tbody id="unitsBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- CALL RECORD -->
+    <section class="screen" id="s-call">
+      <div class="panel left" id="callLeft"></div>
+      <div class="panel right"><div class="tabs" id="callTabs"></div><div class="tabbody" id="callTabBody"></div></div>
+    </section>
+
+    <!-- SEARCH -->
+    <section class="screen" id="s-search">
+      <div class="panel left">
+        <div class="phead"><h2>Name Search</h2><span class="sub">UnitLink-Core records</span></div>
+        <form class="sform" id="searchForm"><input class="fin" id="sQuery" placeholder="Name or character ID"><button class="btn">Run Name</button></form>
+        <div class="grid" style="border-top:0"><table><thead><tr><th>ID</th><th>Name</th><th>DOB</th><th>Sex</th><th>Flags</th></tr></thead><tbody id="resBody"><tr><td colspan="5" class="empty">Search by name or character ID.</td></tr></tbody></table></div>
+      </div>
+      <div class="panel right">
+        <div class="phead"><h2 id="retTitle">State Return</h2></div>
+        <div class="ret" id="ret"><span class="w">Run a name to see the return.</span></div>
+        <div class="actbar" id="retActs" style="display:none">
+          <button class="btn" data-f="citation">Issue Citation</button><button class="btn" data-f="arrest">Arrest Report</button>
+          <button class="btn gray" data-f="report">Incident Report</button><button class="btn red" data-f="warrant">Request Warrant</button>
+          <button class="btn gray" id="addAlertFromRet">Add Alert</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RETURNS -->
+    <section class="screen col" id="s-returns">
+      <div class="panel" style="flex:1"><div class="phead"><h2>State Returns</h2><span class="sub">Names you ran in the last 12 hours</span></div>
+        <div class="grid"><table><thead><tr><th>Time</th><th>Subject</th><th>ID</th><th>Call#</th><th>Result</th></tr></thead><tbody id="retBody"></tbody></table></div></div>
+    </section>
+
+    <!-- CALL HISTORY -->
+    <section class="screen col" id="s-history">
+      <div class="panel" style="flex:1"><div class="phead"><h2>Call History</h2><span class="sub">Last 100 closed calls</span></div>
+        <div class="grid"><table><thead><tr><th>Call#</th><th>Nature</th><th>Pr.</th><th>Address</th><th>Caller</th><th>Units</th><th>Opened</th><th>Closed</th><th>Disposition</th></tr></thead><tbody id="histBody"></tbody></table></div></div>
+    </section>
+
+    <!-- FORMS -->
+    <section class="screen" id="s-forms">
+      <div class="panel main"><div class="ftabs" id="formTabs"></div><div class="tabbody" style="border-top:1px solid var(--line-2)" id="formBody"></div></div>
+      <div class="panel side"><div class="phead"><h2>My Records</h2></div>
+        <div class="grid"><table><thead><tr><th>Number</th><th>Type</th><th>Subject</th><th>Status</th></tr></thead><tbody id="myRecBody"></tbody></table></div></div>
+    </section>
+
+    <!-- ALERTS -->
+    <section class="screen col" id="s-alerts">
+      <div class="panel" style="flex:1">
+        <div class="alerthead"><h2><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.1"/></svg>Active Alerts</h2><button class="ab" id="addAlert">+ Add Alert</button></div>
+        <div class="grid" id="alertsGrid"></div>
+      </div>
+    </section>
+
+    <!-- LAWS -->
+    <section class="screen col" id="s-laws">
+      <div class="panel" style="flex:1">
+        <div class="phead"><h2>San Andreas Penal Code</h2><div class="tools"><div class="pill"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="lawSearch" placeholder="Code, offense or abbreviation..."></div></div></div>
+        <div class="grid"><table><thead><tr><th>Code</th><th>Offense</th><th>Class</th><th>License Points</th><th>Notes</th></tr></thead><tbody id="lawBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <div class="modal" id="modal"><div class="mbox"><div class="mh" id="mTitle"></div><div class="mb" id="mBody"></div><div class="mf" id="mFoot"></div></div></div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="statusbar">
+    <div><span class="dot"></span>Connected</div>
+    <div>Status: <select id="sbStatus"></select></div>
+    <div id="sbCall">No Active Call</div>
+    <div id="sbReturns">State Returns: 0</div>
+    <div id="sbUnit"></div>
+    <div id="sbSignal" class="sig" style="display:none">SIGNAL 100</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+ </div>
+</div>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

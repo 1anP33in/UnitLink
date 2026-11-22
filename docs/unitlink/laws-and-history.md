@@ -2,7 +2,7 @@
 
 ## Laws
 
-The Tropical State code, from `config.lua`. You can search it by code, offense or abbreviation.
+The San Andreas Penal Code, from `config.lua`. You can search it by code, offense or abbreviation.
 
 | Color | Class |
 |---|---|

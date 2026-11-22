@@ -16,6 +16,6 @@ UnitLink has been checked offline but **not on a live FXServer yet**. Go through
 - [ ] 12. Adding a BOLO notifies every on-duty unit. Removing it works.
 - [ ] 13. Signal 100 from a supervisor shows on every tablet. A non-supervisor can't set it.
 - [ ] 14. Going off duty with the tablet open closes it.
-- [ ] 15. `restart unitlink` with the tablet open gives control back and removes the prop.
+- [ ] 15. `restart UnitLink-CAD` with the tablet open gives control back and removes the prop.
 
 If something fails, note the item number and any console errors (F8, and the server console).

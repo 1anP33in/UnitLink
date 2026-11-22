@@ -21,11 +21,11 @@ Not yet. By default only LEO can open it. A Fire & Rescue CAD is on the [roadmap
 <details>
 <summary>Where do licenses come from?</summary>
 
-tsrp-core character metadata, key `licenses`. A future DMV script only has to write that key.
+UnitLink-Core character metadata, key `licenses`. A future DMV script only has to write that key.
 </details>
 
 <details>
-<summary>Does UnitLink work without tsrp-ui?</summary>
+<summary>Does UnitLink work without UnitLink-UI?</summary>
 
 Yes. You just won't see its notifications.
 </details>
@@ -33,5 +33,5 @@ Yes. You just won't see its notifications.
 <details>
 <summary>Can I change the command, key or laws?</summary>
 
-Yes. See [UnitLink Config](../configuration/unitlink-config.md) and [Editing the Laws](../configuration/laws.md).
+Yes. See [UnitLink Config](../configuration/ulcore-config.md) and [Editing the Laws](../configuration/laws.md).
 </details>

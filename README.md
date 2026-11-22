@@ -1,17 +1,17 @@
-# UnitLink CAD · Tropical State RP
+# UnitLink CAD / MDT
 
-UnitLink is the in-game CAD / MDT tablet for **Tropical State RP**, together with the TSRP scripts it needs. This repo mirrors the server's `resources` folder, so every script sits in the same category folder it uses on the server.
+UnitLink is an in-game CAD / MDT tablet for FiveM roleplay servers, together with the UnitLink scripts it needs. This repo mirrors the server's `resources` folder, so every script sits in the same category folder it uses on the server.
 
-> **Status:** built and checked offline. The Lua compiles, the NUI was clicked through in a browser, and tsrp-core's 262 tests pass. It has **not been run on a live FXServer yet.** See the testing checklist in [the UnitLink README](<[Tropical_PoliceScripts]/unitlink/README.md>).
+> **Status:** built and checked offline. The Lua compiles, the NUI was clicked through in a browser, and UnitLink-Core's 262 tests pass. It has **not been run on a live FXServer yet.** See the testing checklist in [the UnitLink README](<[UnitLink]/UnitLink-CAD/README.md>).
 
 ## Scripts
 
 | Resource | Folder | What it does for UnitLink |
 |---|---|---|
-| **unitlink** | `[Tropical_PoliceScripts]/unitlink` | The CAD / MDT tablet (`/cad` or F5) |
-| **tsrp-police** | `[Tropical_PoliceScripts]/tsrp-police` | Calls, units, statuses, attaching and closing calls (CAD exports). 911 calls show up in UnitLink live, and changes made in the CAD show up on the 911 cards |
-| **tsrp-core** | `[Tropical_Permissions]/tsrp-core` | People (name, date of birth, gender, nationality, height) through `SearchCharacters` / `GetCharacterById`. Licenses and driver points come from character metadata, key `licenses` |
-| **tsrp-ui** | `[Tropical_Menus]/tsrp-ui` | Notifications |
+| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablet (`/cad` or F5) |
+| **UnitLink-Police** | `[UnitLink]/UnitLink-Police` | Calls, units, statuses, attaching and closing calls (CAD exports). 911 calls show up in UnitLink live, and changes made in the CAD show up on the 911 cards |
+| **UnitLink-Core** | `[UnitLink]/UnitLink-Core` | People (name, date of birth, gender, nationality, height) through `SearchCharacters` / `GetCharacterById`. Licenses and driver points come from character metadata, key `licenses` |
+| **UnitLink-UI** | `[UnitLink]/UnitLink-UI` | Notifications |
 
 Notes, call history, records, warrants, BOLOs and state returns are kept in UnitLink's own `ul_*` MySQL tables, through **oxmysql**. oxmysql isn't in this repo; get it from its official release.
 
@@ -24,15 +24,15 @@ This repo is **private**. Your GitHub account needs access to it, and Git needs 
 **Option A: git clone (recommended, easy to update)**
 
 ```bash
-git clone https://github.com/1anP33in/tsrp-unitlink-cad.git
+git clone https://github.com/1anP33in/UnitLink.git
 ```
 
-This creates a `tsrp-unitlink-cad` folder holding the `[Category]` folders. Copy those into your server's `resources` folder.
+This creates a `UnitLink` folder holding the `[UnitLink]` folder. Copy that into your server's `resources` folder.
 
 To get the newest version later:
 
 ```bash
-cd tsrp-unitlink-cad
+cd UnitLink
 git pull
 ```
 
@@ -43,37 +43,37 @@ Then copy the folders over again.
 For a fresh server that has no `resources` folder yet, run this from the server's base folder (the one that holds `server.cfg`):
 
 ```bash
-git clone https://github.com/1anP33in/tsrp-unitlink-cad.git resources
+git clone https://github.com/1anP33in/UnitLink.git resources
 ```
 
 After that, `git pull` inside `resources` updates the scripts in place. The repo's `.gitignore` only tracks these scripts, so any other resources you add aren't affected.
 
 **Option C: ZIP download**
 
-On GitHub, click **Code → Download ZIP**, extract it, and copy the `[Category]` folders into `resources`.
+On GitHub, click **Code → Download ZIP**, extract it, and copy the `[UnitLink]` folder into `resources`.
 
 ## Install
 
-1. Put the folders in your server's `resources` folder, keeping the `[Category]` folders (see **Download**).
+1. Put the folders in your server's `resources` folder, keeping the `[UnitLink]` folder (see **Download**).
 2. In `server.cfg`, in this order:
 
 ```cfg
 ensure oxmysql
-ensure tsrp-core
-ensure tsrp-ui
-ensure tsrp-police
-ensure unitlink
+ensure UnitLink-Core
+ensure UnitLink-UI
+ensure UnitLink-Police
+ensure UnitLink-CAD
 ```
 
 3. Secrets go **only in `server.cfg`**, never in these files:
 
 ```cfg
-set mysql_connection_string "mysql://user:password@localhost/tsrp?charset=utf8mb4"
-set tsrp_discord_token "YOUR_BOT_TOKEN"                                   # tsrp-core Discord role sync
-set tsrp_core_log_webhook "https://discord.com/api/webhooks/..."          # tsrp-core audit log (optional)
+set mysql_connection_string "mysql://user:password@localhost/ulcore?charset=utf8mb4"
+set unitlink_discord_token "YOUR_BOT_TOKEN"                                   # UnitLink-Core Discord role sync
+set unitlink_core_log_webhook "https://discord.com/api/webhooks/..."          # UnitLink-Core audit log (optional)
 ```
 
-4. Optional: tsrp-police's webhook URLs go in `tsrp-police/config/webhooks.lua`. They're blank in this repo, so keep real ones out of commits.
+4. Optional: UnitLink-Police's webhook URLs go in `UnitLink-Police/config/webhooks.lua`. They're blank in this repo, so keep real ones out of commits.
 5. Start the server. The database tables are created automatically.
 
 ## UnitLink at a glance
@@ -86,7 +86,7 @@ set tsrp_core_log_webhook "https://discord.com/api/webhooks/..."          # tsrp
   - **Name search:** state returns showing licenses, driver points, warrants and alerts.
   - **Forms:** citations, arrest reports, incident reports and warrant requests.
   - **Alerts:** warrant approvals, active warrants and BOLOs.
-  - **Laws:** the searchable Tropical State code.
+  - **Laws:** the searchable San Andreas Penal Code.
   - **History:** the last 100 closed calls.
   - **Signal 100 and Panic.**
 - **Rules the server enforces:**

@@ -6,24 +6,24 @@
 
 ```cfg
 # database (oxmysql)
-set mysql_connection_string "mysql://user:password@localhost/tsrp?charset=utf8mb4"
+set mysql_connection_string "mysql://user:password@localhost/ulcore?charset=utf8mb4"
 
-# tsrp-core: Discord role sync bot token
-set tsrp_discord_token "YOUR_BOT_TOKEN"
+# unitlink-core: Discord role sync bot token
+set unitlink_discord_token "YOUR_BOT_TOKEN"
 
-# tsrp-core: audit log webhook (optional)
-set tsrp_core_log_webhook "https://discord.com/api/webhooks/..."
+# unitlink-core: audit log webhook (optional)
+set unitlink_core_log_webhook "https://discord.com/api/webhooks/..."
 ```
 
 | Setting | Used by | What it's for |
 |---|---|---|
 | `mysql_connection_string` | oxmysql | Database connection |
-| `tsrp_discord_token` | tsrp-core | Gives in-game groups based on Discord roles |
-| `tsrp_core_log_webhook` | tsrp-core | Sends staff audit entries to a Discord channel |
+| `unitlink_discord_token` | UnitLink-Core | Gives in-game groups based on Discord roles |
+| `unitlink_core_log_webhook` | UnitLink-Core | Sends staff audit entries to a Discord channel |
 
-## tsrp-police webhooks
+## UnitLink-Police webhooks
 
-tsrp-police reads its webhook URLs from `tsrp-police/config/webhooks.lua`. That file is **server only** (it's never sent to players). In the repo every URL is blank:
+UnitLink-Police reads its webhook URLs from `UnitLink-Police/config/webhooks.lua`. That file is **server only** (it's never sent to players). In the repo every URL is blank:
 * `default`, `duty`, `dispatch`, `panic`, `security`
 
 If you fill them in on your server, **don't commit that file.**
@@ -31,7 +31,7 @@ If you fill them in on your server, **don't commit that file.**
 ## Permissions (ACE)
 
 ```cfg
-add_ace group.admin tsrp.bootstrap allow
+add_ace group.admin unitlink.bootstrap allow
 ```
 
-This makes server admins tsrp-core "bootstrap" admins, who can do everything. Department access itself is given per character in the tsrp-core dashboard. See [Permissions & Access](../rules/permissions.md).
+This makes server admins UnitLink-Core "bootstrap" admins, who can do everything. Department access itself is given per character in the UnitLink-Core dashboard. See [Permissions & Access](../rules/permissions.md).

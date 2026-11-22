@@ -1,6 +1,6 @@
 # Exports & Events
 
-## tsrp-police: CAD exports (server)
+## unitlink-police: CAD exports (server)
 
 Actions return `ok, err`.
 
@@ -14,20 +14,20 @@ Actions return `ok, err`.
 | `CloseCall(src, id)` | Closes the call |
 | `GetUnits()` | On-duty units (`source, callsign, dept, status, calls…`) |
 | `SetUnitStatus(src, status)` | `available`, `responding`, `onscene`, `busy`, `unavailable` |
-| `IsSupervisor(src)` | `true` if the player has `tsrp.<dept>.supervisor` or `tsrp.police.supervisor` |
+| `IsSupervisor(src)` | `true` if the player has `unitlink.<dept>.supervisor` or `unitlink.police.supervisor` |
 
 Older exports: `IsOnDuty(source)`, `GetOfficer(source)`, `GetOnDutyOfficers()`, `ClockOut(source, reason)`.
 
-## tsrp-police: local server events
+## unitlink-police: local server events
 
 | Event | Arguments |
 |---|---|
-| `tsrp-police:server:callCreated` | `call` |
-| `tsrp-police:server:callUpdated` | `call, action` |
-| `tsrp-police:server:callClosed` | `id, reason, by` |
-| `tsrp-police:server:unitsChanged` | none |
+| `unitlink-police:server:callCreated` | `call` |
+| `unitlink-police:server:callUpdated` | `call, action` |
+| `unitlink-police:server:callClosed` | `id, reason, by` |
+| `unitlink-police:server:unitsChanged` | none |
 
-Client: `tsrp-police:dutyChanged (onDuty, state)`.
+Client: `unitlink-police:dutyChanged (onDuty, state)`.
 
 ## UnitLink network events
 
@@ -39,5 +39,5 @@ Client: `tsrp-police:dutyChanged (onDuty, state)`.
 | `unitlink:server:closed` | client → server | Tablet closed |
 
 {% hint style="warning" %}
-Don't trigger `unitlink:server:req` from other scripts. Use the tsrp-police exports instead. Every request is checked for on duty, CAD access and a loaded character.
+Don't trigger `unitlink:server:req` from other scripts. Use the UnitLink-Police exports instead. Every request is checked for on duty, CAD access and a loaded character.
 {% endhint %}

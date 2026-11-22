@@ -7,33 +7,33 @@ The repo is **private**. Your GitHub account needs access, and Git needs to be s
 ## Option A: git clone (recommended)
 
 ```bash
-git clone https://github.com/1anP33in/tsrp-unitlink-cad.git
+git clone https://github.com/1anP33in/UnitLink.git
 ```
 
-You get a `tsrp-unitlink-cad` folder holding:
+You get a `UnitLink` folder holding:
 
 ```
-[Tropical_PoliceScripts]/unitlink
-[Tropical_PoliceScripts]/tsrp-police
-[Tropical_Permissions]/tsrp-core
-[Tropical_Menus]/tsrp-ui
+[UnitLink]/UnitLink-CAD
+[UnitLink]/UnitLink-Police
+[UnitLink]/UnitLink-Core
+[UnitLink]/UnitLink-UI
 ```
 
-Copy those `[Category]` folders into your server's `resources` folder.
+Copy the `[UnitLink]` folder into your server's `resources` folder.
 
 ## Option B: clone straight into a new server
 
 For a fresh server with no `resources` folder yet, run this from the base folder (the one holding `server.cfg`):
 
 ```bash
-git clone https://github.com/1anP33in/tsrp-unitlink-cad.git resources
+git clone https://github.com/1anP33in/UnitLink.git resources
 ```
 
 Updating is then just `git pull` inside `resources`. The repo only tracks these scripts, so any other resources you add aren't touched.
 
 ## Option C: ZIP
 
-On GitHub: **Code → Download ZIP**. Extract it and copy the `[Category]` folders into `resources`.
+On GitHub: **Code → Download ZIP**. Extract it and copy the `[UnitLink]` folder into `resources`.
 
 ## You also need
 

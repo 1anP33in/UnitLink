@@ -1,5 +1,5 @@
 ---
-description: The in-game CAD / MDT tablet for Tropical State RP.
+description: The in-game CAD / MDT tablet for FiveM roleplay servers.
 ---
 
 # Welcome to UnitLink
@@ -9,7 +9,7 @@ description: The in-game CAD / MDT tablet for Tropical State RP.
 
 **1. Connect it to GitHub**
 1. In GitBook, create a new **Space**, then open **Configure → GitHub Sync**.
-2. Pick the repo `1anP33in/tsrp-unitlink-cad`, branch `main`.
+2. Pick the repo `1anP33in/UnitLink`, branch `main`.
 3. Choose **GitHub → GitBook** for the first sync. GitBook reads `.gitbook.yaml`, which points it at the `docs/` folder.
 4. After that, edits made in GitBook are pushed back to GitHub as commits, and edits pushed to GitHub show up in GitBook.
 
@@ -17,8 +17,8 @@ description: The in-game CAD / MDT tablet for Tropical State RP.
 
 | Replace | With |
 |---|---|
-| `Tropical State RP` | your server's name |
-| `1anP33in/tsrp-unitlink-cad` | your repo, if you fork or rename it |
+| `San Andreas RP` (the default `Config.ServerName` in UnitLink-Core) | your server's name |
+| `1anP33in/UnitLink` | your repo, if you fork or rename it |
 | `/cad` and `F5` | your command and key, if you change them in `config.lua` |
 | `12 points` | your suspension limit (`Config.Licenses.suspendAt`) |
 
@@ -37,7 +37,7 @@ description: The in-game CAD / MDT tablet for Tropical State RP.
 **5. Private or public:** the repo is private, but a GitBook space can be published publicly. Before you publish, check that no page shows secrets: no webhook URLs, tokens or database passwords. None are in these docs by default.
 {% endhint %}
 
-UnitLink is the in-game **CAD / MDT tablet** for Tropical State RP. It works like a real dispatch console:
+UnitLink is an in-game **CAD / MDT tablet** for FiveM roleplay servers. It works like a real dispatch console:
 * live calls and units
 * call records with notes
 * name searches with state returns
@@ -52,7 +52,7 @@ UnitLink is the in-game **CAD / MDT tablet** for Tropical State RP. It works lik
 <tr><td><strong>Installation</strong></td><td>Folders, start order, first boot</td><td><a href="getting-started/installation.md">installation.md</a></td></tr>
 <tr><td><strong>Using UnitLink</strong></td><td>Every screen explained</td><td><a href="unitlink/overview.md">overview.md</a></td></tr>
 <tr><td><strong>Rules</strong></td><td>Points, warrants, permissions</td><td><a href="rules/citations-and-points.md">citations-and-points.md</a></td></tr>
-<tr><td><strong>Configuration</strong></td><td>Every setting in config.lua</td><td><a href="configuration/unitlink-config.md">unitlink-config.md</a></td></tr>
+<tr><td><strong>Configuration</strong></td><td>Every setting in config.lua</td><td><a href="configuration/ulcore-config.md">unitlink-config.md</a></td></tr>
 <tr><td><strong>Roadmap</strong></td><td>SAFR, DOT, Civilian portal, Admin</td><td><a href="roadmap/overview.md">overview.md</a></td></tr>
 </tbody></table>
 
@@ -60,11 +60,11 @@ UnitLink is the in-game **CAD / MDT tablet** for Tropical State RP. It works lik
 
 | Resource | Folder | Role |
 |---|---|---|
-| **unitlink** | `[Tropical_PoliceScripts]/unitlink` | The CAD / MDT tablet |
-| **tsrp-police** | `[Tropical_PoliceScripts]/tsrp-police` | Duty, units, 911 calls and the CAD exports |
-| **tsrp-core** | `[Tropical_Permissions]/tsrp-core` | Characters, groups and departments, licenses (metadata) |
-| **tsrp-ui** | `[Tropical_Menus]/tsrp-ui` | Notifications and menus |
+| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablet |
+| **UnitLink-Police** | `[UnitLink]/UnitLink-Police` | Duty, units, 911 calls and the CAD exports |
+| **UnitLink-Core** | `[UnitLink]/UnitLink-Core` | Characters, groups and departments, licenses (metadata) |
+| **UnitLink-UI** | `[UnitLink]/UnitLink-UI` | Notifications and menus |
 
 {% hint style="info" %}
-**Status:** built and checked offline: the Lua compiles, the NUI was clicked through in a browser, and tsrp-core's 262 tests pass. It hasn't been run on a live FXServer yet. Use the [Live Server Checklist](testing/live-server-checklist.md).
+**Status:** built and checked offline: the Lua compiles, the NUI was clicked through in a browser, and UnitLink-Core's 262 tests pass. It hasn't been run on a live FXServer yet. Use the [Live Server Checklist](testing/live-server-checklist.md).
 {% endhint %}

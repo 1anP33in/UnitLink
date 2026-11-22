@@ -29,14 +29,14 @@
 
 ## Configuration
 
-* [UnitLink Config](configuration/unitlink-config.md)
+* [UnitLink Config](configuration/ulcore-config.md)
 * [Editing the Laws](configuration/laws.md)
 
 ## Required Scripts
 
-* [tsrp-core](scripts/tsrp-core.md)
-* [tsrp-police](scripts/tsrp-police.md)
-* [tsrp-ui](scripts/tsrp-ui.md)
+* [UnitLink-Core](scripts/core.md)
+* [UnitLink-Police](scripts/police.md)
+* [UnitLink-UI](scripts/ui.md)
 
 ## Developers
 

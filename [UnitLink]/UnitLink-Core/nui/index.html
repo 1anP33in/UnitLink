@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnitLink Core</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Character selection -->
+        <section id="view-selection" class="view" hidden>
+            <aside class="side-panel">
+                <header class="brand">
+                    <div class="brand-mark" aria-hidden="true"><span></span></div>
+                    <div>
+                        <div class="brand-name" data-brand-name>San Andreas RP</div>
+                        <div class="brand-sub">Choose your character</div>
+                    </div>
+                </header>
+
+                <div id="selection-list" class="char-list"></div>
+                <div id="selection-error" class="banner banner-error" hidden></div>
+
+                <!-- Creation form (replaces the list) -->
+                <form id="creation-form" class="creation" hidden novalidate>
+                    <h2 class="panel-title">New character</h2>
+                    <p class="panel-sub">This is who you will be in the city. Names and birth dates are checked by the server.</p>
+                    <div class="field-row">
+                        <label class="field">
+                            <span>First name</span>
+                            <input name="firstname" autocomplete="off" spellcheck="false" maxlength="32">
+                            <small class="field-error" data-error-for="firstname"></small>
+                        </label>
+                        <label class="field">
+                            <span>Last name</span>
+                            <input name="lastname" autocomplete="off" spellcheck="false" maxlength="32">
+                            <small class="field-error" data-error-for="lastname"></small>
+                        </label>
+                    </div>
+                    <div class="field-row">
+                        <label class="field">
+                            <span>Date of birth</span>
+                            <input name="dateofbirth" type="date">
+                            <small class="field-error" data-error-for="dateofbirth"></small>
+                        </label>
+                        <label class="field">
+                            <span>Height (cm)</span>
+                            <input name="height" type="number" inputmode="numeric">
+                            <small class="field-error" data-error-for="height"></small>
+                        </label>
+                    </div>
+                    <div class="field">
+                        <span>Gender</span>
+                        <div class="segmented" id="gender-options"></div>
+                        <small class="field-error" data-error-for="gender"></small>
+                    </div>
+                    <label class="field">
+                        <span>Nationality</span>
+                        <select name="nationality"></select>
+                        <small class="field-error" data-error-for="nationality"></small>
+                    </label>
+                    <div id="creation-error" class="banner banner-error" hidden></div>
+                    <div class="actions">
+                        <button type="button" class="btn btn-ghost" data-action="cancel-create">Back</button>
+                        <button type="submit" class="btn btn-primary">Create &amp; customise</button>
+                    </div>
+                </form>
+
+                <footer class="side-footer">
+                    <span data-slot-summary></span>
+                </footer>
+            </aside>
+        </section>
+
+        <!-- Spawn selection -->
+        <section id="view-spawn" class="view" hidden>
+            <aside class="side-panel side-right">
+                <header class="brand">
+                    <div class="brand-mark" aria-hidden="true"><span></span></div>
+                    <div>
+                        <div class="brand-name" id="spawn-character-name">Welcome</div>
+                        <div class="brand-sub">Where are you headed?</div>
+                    </div>
+                </header>
+                <div id="spawn-list" class="spawn-list"></div>
+                <div id="spawn-error" class="banner banner-error" hidden></div>
+                <div class="actions">
+                    <button type="button" class="btn btn-ghost" data-action="spawn-back">Change character</button>
+                    <button type="button" class="btn btn-primary" data-action="spawn-go" disabled>Enter the city</button>
+                </div>
+            </aside>
+        </section>
+
+        <!-- Admin dashboard -->
+        <section id="view-admin" class="view view-admin" hidden>
+            <div class="admin-window" role="dialog" aria-label="Admin dashboard">
+                <nav class="admin-nav">
+                    <header class="brand brand-compact">
+                        <div class="brand-mark" aria-hidden="true"><span></span></div>
+                        <div>
+                            <div class="brand-name">UnitLink Admin</div>
+                            <div class="brand-sub" id="admin-version"></div>
+                        </div>
+                    </header>
+                    <div id="admin-nav-items" class="nav-items"></div>
+                    <div class="nav-foot">
+                        <span id="admin-role" class="tag"></span>
+                        <button class="btn btn-ghost btn-sm" data-action="admin-close">Close <kbd>Esc</kbd></button>
+                    </div>
+                </nav>
+                <main class="admin-main">
+                    <header class="admin-head">
+                        <h1 id="admin-title">Overview</h1>
+                        <div id="admin-head-actions"></div>
+                    </header>
+                    <div id="admin-content" class="admin-content"></div>
+                </main>
+            </div>
+        </section>
+
+        <!-- Confirm / prompt modal -->
+        <div id="modal" class="modal" hidden>
+            <div class="modal-card" role="dialog" aria-modal="true">
+                <h3 id="modal-title"></h3>
+                <p id="modal-body"></p>
+                <div id="modal-extra"></div>
+                <div class="actions">
+                    <button type="button" class="btn btn-ghost" id="modal-cancel">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="modal-confirm">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toasts" class="toasts" aria-live="polite"></div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/characters.js"></script>
+    <script src="js/creation.js"></script>
+    <script src="js/spawn.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

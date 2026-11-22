@@ -1,7 +1,7 @@
 # Citations & License Points
 
 {% hint style="success" %}
-**Tropical State RP has no fines.** Citations add **points** to the driver's license instead.
+**UnitLink has no fines.** Citations add **points** to the driver's license instead.
 {% endhint %}
 
 ## How it works
@@ -36,7 +36,7 @@
 
 ## Where licenses are stored
 
-In tsrp-core character metadata, under the key `licenses`:
+In UnitLink-Core character metadata, under the key `licenses`:
 
 ```lua
 licenses = {

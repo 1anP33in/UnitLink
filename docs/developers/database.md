@@ -1,6 +1,6 @@
 # Database Tables
 
-UnitLink creates these tables through oxmysql on start (`Config.AutoInstallSql`), or you can run `unitlink/sql/install.sql` yourself. Every query is parameterized.
+UnitLink creates these tables through oxmysql on start (`Config.AutoInstallSql`), or you can run `UnitLink-CAD/sql/install.sql` yourself. Every query is parameterized.
 
 | Table | Holds | Key columns |
 |---|---|---|
@@ -10,4 +10,4 @@ UnitLink creates these tables through oxmysql on start (`Config.AutoInstallSql`)
 | `ul_alerts` | BOLOs and alerts | `subject_char`, `created_at` |
 | `ul_returns` | State returns that were run (Returns log) | `officer_char`, `subject_char`, `call_id`, `created_at` |
 
-Characters are referenced by their **tsrp-core character ID**. Licenses aren't in these tables; they're in tsrp-core character metadata (`licenses`).
+Characters are referenced by their **UnitLink-Core character ID**. Licenses aren't in these tables; they're in UnitLink-Core character metadata (`licenses`).
