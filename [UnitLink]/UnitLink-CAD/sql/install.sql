@@ -113,3 +113,102 @@ CREATE TABLE IF NOT EXISTS `ul_civilians` (
     KEY `idx_ul_civilians_owner` (`owner`, `deleted`),
     KEY `idx_ul_civilians_name` (`lastname`, `firstname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1000;
+
+-- SAFR: Fire & Rescue --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ul_fire_incidents` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `type` VARCHAR(16) NOT NULL,              -- MEDICAL | FIRE | RESCUE | MVC | HAZMAT
+    `nature` VARCHAR(48) NOT NULL,
+    `priority` TINYINT UNSIGNED NOT NULL DEFAULT 2,
+    `street` VARCHAR(120) NULL,
+    `pos_x` FLOAT NOT NULL DEFAULT 0,
+    `pos_y` FLOAT NOT NULL DEFAULT 0,
+    `pos_z` FLOAT NOT NULL DEFAULT 0,
+    `caller` VARCHAR(64) NULL,
+    `callback` VARCHAR(32) NULL,
+    `message` VARCHAR(500) NULL,
+    `patients` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    `origin` VARCHAR(12) NOT NULL DEFAULT '911', -- 911 | cad
+    `status` VARCHAR(12) NOT NULL DEFAULT 'active', -- active | closed
+    `disposition` VARCHAR(48) NULL,
+    `units` VARCHAR(255) NULL,               -- callsigns, saved when closed
+    `closed_by` VARCHAR(64) NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `closed_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_ul_fire_status` (`status`, `id`),
+    KEY `idx_ul_fire_pos` (`pos_x`, `pos_y`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=3001;
+
+CREATE TABLE IF NOT EXISTS `ul_fire_notes` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `incident_id` INT UNSIGNED NOT NULL,
+    `author` VARCHAR(64) NOT NULL,
+    `body` VARCHAR(500) NOT NULL,
+    `is_system` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_ul_fire_notes_inc` (`incident_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `ul_fire_patients` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `incident_id` INT UNSIGNED NOT NULL,
+    `subject_char` BIGINT UNSIGNED NULL,      -- civilian profile / character, NULL = unidentified
+    `name` VARCHAR(64) NOT NULL,
+    `injury` VARCHAR(200) NOT NULL,
+    `severity` VARCHAR(16) NOT NULL,
+    `treatment` VARCHAR(500) NULL,
+    `destination` VARCHAR(48) NULL,
+    `pt_condition` VARCHAR(16) NULL,
+    `created_by` VARCHAR(64) NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_ul_fire_pt_inc` (`incident_id`),
+    KEY `idx_ul_fire_pt_subject` (`subject_char`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `ul_fire_reports` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `form` VARCHAR(16) NOT NULL,
+    `incident_id` INT UNSIGNED NULL,
+    `subject_char` BIGINT UNSIGNED NULL,
+    `subject_name` VARCHAR(64) NULL,
+    `author_char` BIGINT UNSIGNED NOT NULL,
+    `author_label` VARCHAR(64) NOT NULL,
+    `data` LONGTEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_ul_fire_rep_author` (`author_char`, `id`),
+    KEY `idx_ul_fire_rep_subject` (`subject_char`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- everyone who has gone on duty with SAFR (roster + certifications)
+CREATE TABLE IF NOT EXISTS `ul_fire_members` (
+    `member_id` BIGINT UNSIGNED NOT NULL,     -- officer id (account in standalone mode)
+    `name` VARCHAR(64) NOT NULL,
+    `callsign` VARCHAR(12) NULL,
+    `certs` VARCHAR(255) NULL,                -- JSON list
+    `last_seen` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`member_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `ul_fire_mutual_aid` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `from_station` VARCHAR(32) NOT NULL,
+    `to_dept` VARCHAR(16) NOT NULL,
+    `need` VARCHAR(300) NOT NULL,
+    `status` VARCHAR(12) NOT NULL DEFAULT 'OPEN',
+    `created_by` VARCHAR(64) NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `ul_fire_announcements` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(80) NOT NULL,
+    `body` VARCHAR(600) NULL,
+    `created_by` VARCHAR(64) NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

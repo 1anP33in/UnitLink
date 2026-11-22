@@ -26,6 +26,7 @@ server_scripts {
     'server/calls.lua',
     'server/records.lua',
     'server/alerts.lua',
+    'server/fire.lua',
 }
 
 client_scripts {

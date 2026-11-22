@@ -14,7 +14,7 @@ Ready-to-paste groups and every permission are on the [ACE Permissions](../getti
 | BCSO | `unitlink.bcso.duty` | `unitlink.bcso.supervisor` |
 | LSP | `unitlink.lsp.duty` | `unitlink.lsp.supervisor` |
 | DHS | `unitlink.dhs.duty` | `unitlink.dhs.supervisor` |
-| SAFD | `unitlink.safd.duty` | `unitlink.safd.supervisor` |
+| SAFR | `unitlink.safr.duty` | `unitlink.safr.supervisor` |
 | FAA | `unitlink.faa.duty` | `unitlink.faa.supervisor` |
 
 `unitlink.police.supervisor` makes someone a supervisor across every LEO department.

@@ -8,7 +8,7 @@ Every new screen uses the **same look as the Police CAD**: blue toolbar of tile 
 
 | Module | One line |
 |---|---|
-| [SAFR: Fire & Rescue CAD](safr.md) | Incidents, apparatus, patients, patient care reports, Mayday, station management |
+| **SAFR: Fire & Rescue CAD** | **Built.** See [SAFR Overview](../safr/overview.md) |
 | [DOT: Work Orders](dot.md) | Jobs and roadside requests, fleet and equipment, road closures |
 | [Civilian Portal](civilian-portal.md) | Public tablet: 911 with live tracking, records, applications |
 | [Admin Dashboard](admin-dashboard.md) | Departments, ranks, permissions, employees, system settings |

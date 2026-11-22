@@ -26,6 +26,14 @@
 * [Laws & Call History](unitlink/laws-and-history.md)
 * [Signal 100 & Panic](unitlink/signal-100-and-panic.md)
 
+## Fire & Rescue (SAFR)
+
+* [SAFR Overview](safr/overview.md)
+* [Incidents & Patients](safr/incidents-and-patients.md)
+* [Reports](safr/reports.md)
+* [Alerts & MAYDAY](safr/alerts-and-mayday.md)
+* [Station Management](safr/station-management.md)
+
 ## Rules
 
 * [Citations & License Points](rules/citations-and-points.md)
@@ -56,7 +64,6 @@
 ## Roadmap
 
 * [What's Coming](roadmap/overview.md)
-* [SAFR: Fire & Rescue CAD](roadmap/safr.md)
 * [DOT: Work Orders](roadmap/dot.md)
 * [Civilian Portal](roadmap/civilian-portal.md)
 * [Admin Dashboard](roadmap/admin-dashboard.md)

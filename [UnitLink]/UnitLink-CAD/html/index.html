@@ -107,6 +107,33 @@
  </div>
 </div>
 
+<!-- SAFR: FIRE & RESCUE CAD -->
+<div id="fire">
+ <div class="win">
+  <div class="menubar">
+    <span>File</span><span>View</span><span>Tools</span><span>Help</span>
+    <span class="title" id="fTitle">SAFR · CAD</span>
+    <span class="brand">UNITLINK · SAFR</span>
+    <span class="x" id="fClose" title="Close (Esc)">✕ Close</span>
+  </div>
+  <div class="toolbar" id="fToolbar"></div>
+  <div class="screens">
+    <section class="fscreen" id="fScreen"></section>
+    <div class="modal" id="fModal"><div class="mbox"><div class="mh" id="fmTitle"></div><div class="mb" id="fmBody"></div><div class="mf" id="fmFoot"></div></div></div>
+    <div class="toast" id="fToast"></div>
+  </div>
+  <div class="statusbar">
+    <div><span class="dot"></span>Connected</div>
+    <div>Status: <select id="fsStatus"></select></div>
+    <div>Apparatus: <select id="fsApp"></select></div>
+    <div id="fsCall">No Active Incident</div>
+    <div id="fsUnit"></div>
+    <div id="fsMayday" class="sig" style="display:none">MAYDAY</div>
+    <div class="clock" id="fClock">--:--:--</div>
+  </div>
+ </div>
+</div>
+
 <!-- CIVILIAN ID (/civ) -->
 <div id="civ">
  <div class="win civwin">
@@ -124,5 +151,6 @@
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script src="js/civ.js"></script>
+<script src="js/fire.js"></script>
 </body>
 </html>

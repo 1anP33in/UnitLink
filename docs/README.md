@@ -23,7 +23,7 @@ It runs **standalone**, with no framework and **no money**. People are civilian 
 
 | Resource | Folder | Role |
 | --- | --- | --- |
-| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablet, plus Civilian ID (`/civ`) |
+| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The police CAD, the **SAFR Fire & Rescue CAD**, and Civilian ID (`/civ`) |
 | **UnitLink-Police** | `[UnitLink]/UnitLink-Police` | Duty, units, 911 calls and the CAD exports (ACE permissions) |
 | **UnitLink-UI** | `[UnitLink]/UnitLink-UI` | Notifications and menus |
 | **UnitLink-HUD** | `[UnitLink]/UnitLink-HUD` | Standalone HUD, no money. The job line changes when you go on duty |

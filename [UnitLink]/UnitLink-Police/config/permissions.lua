@@ -21,7 +21,7 @@ Config.Permissions = {
         bcso = { node = 'unitlink.bcso.duty', supervisor = 'unitlink.bcso.supervisor' },
         lsp  = { node = 'unitlink.lsp.duty',  supervisor = 'unitlink.lsp.supervisor' },
         dhs  = { node = 'unitlink.dhs.duty',  supervisor = 'unitlink.dhs.supervisor' },
-        safd = { node = 'unitlink.safd.duty', supervisor = 'unitlink.safd.supervisor' },
+        safr = { node = 'unitlink.safr.duty', supervisor = 'unitlink.safr.supervisor' },
         faa  = { node = 'unitlink.faa.duty',  supervisor = 'unitlink.faa.supervisor' },
     },
 

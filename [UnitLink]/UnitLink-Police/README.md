@@ -49,7 +49,7 @@ Duty access uses your framework's **character permissions**. UnitLink-Police cal
 | BCSO | `unitlink.bcso.duty` | `unitlink.bcso.supervisor` | `bcso` / … |
 | LSP | `unitlink.lsp.duty` | `unitlink.lsp.supervisor` | `lsp` / … |
 | DHS | `unitlink.dhs.duty` | `unitlink.dhs.supervisor` | `dhs` / … |
-| SAFD | `unitlink.safd.duty` | `unitlink.safd.supervisor` | `safd` / … |
+| SAFR | `unitlink.safr.duty` | `unitlink.safr.supervisor` | `safr` / … |
 | FAA | `unitlink.faa.duty` | `unitlink.faa.supervisor` | `faa` / … |
 
 The cross-department override `unitlink.police.supervisor` (every LEO supervisor and LEO High Command) can close any 911 call.

@@ -117,7 +117,7 @@ To render the PNGs again after editing an SVG, run `python logos/build_logos.py`
 
 ## Testing checklist
 
-1. Off duty: `/cad` says you must be on duty. A SAFD unit can't open it (by default).
+1. Off duty: `/cad` says you must be on duty. A SAFR unit gets the SAFR Fire & Rescue CAD instead of the police CAD.
 2. On duty as SASP: `/cad` opens, you hold a tablet, and your unit shows as AVAIL.
 3. A civilian does `/911 test`. The call appears on the CAD board within a second, with a "911 CALL RECEIVED" note.
 4. Accept with **Y** (UnitLink-Police card). The CAD shows you attached and ENRT, with a system note.

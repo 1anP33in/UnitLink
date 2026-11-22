@@ -44,6 +44,89 @@ Config.Fines = {
 }
 
 ---------------------------------------------------------------------
+-- SAFR: Fire & Rescue CAD
+-- On-duty units whose UnitLink-Police department type has `accessFlag`
+-- get the SAFR tablet when they press /cad (F5). Supervisors are the
+-- ACE permission unitlink.safr.supervisor.
+---------------------------------------------------------------------
+Config.Fire = {
+    enabled = true,
+    accessFlag = 'fireCad',
+    firstIncident = 3001,           -- incident numbers start here
+    -- civilians report fires and medical emergencies with these
+    commands = { fire = '911fire', medical = '911ems' },
+    callCooldown = 60,              -- seconds between civilian fire / EMS calls per player
+    -- unit statuses (SAFR keeps its own; UnitLink-Police statuses are police-only)
+    statuses = {
+        { code = 'AVAIL', label = 'Available',      color = 'avail' },
+        { code = 'ENRT',  label = 'En Route',       color = 'enrt', onCall = true },
+        { code = 'ONSCN', label = 'On Scene',       color = 'arrvd', onCall = true },
+        { code = 'TRANS', label = 'Transporting',   color = 'trans', onCall = true },
+        { code = 'ATHSP', label = 'At Hospital',    color = 'disp', onCall = true },
+        { code = 'BUSY',  label = 'Busy',           color = 'busy' },
+        { code = 'OOS',   label = 'Out of Service', color = 'offdt' },
+    },
+    types = {
+        MEDICAL = { 'CARDIAC ARREST', 'DIFFICULTY BREATHING', 'CHEST PAIN', 'FALL', 'OVERDOSE', 'UNCONSCIOUS', 'TRAUMA', 'MEDICAL EMERGENCY' },
+        FIRE    = { 'STRUCTURE FIRE', 'VEHICLE FIRE', 'BRUSH FIRE', 'ALARM ACTIVATION', 'SMOKE INVESTIGATION', 'REPORTED FIRE' },
+        RESCUE  = { 'WATER RESCUE', 'HIGH ANGLE RESCUE', 'ELEVATOR RESCUE', 'CONFINED SPACE' },
+        MVC     = { 'MVC W/ INJURIES', 'MVC W/ ENTRAPMENT', 'MVC ROLLOVER', 'MVC VS PEDESTRIAN' },
+        HAZMAT  = { 'FUEL SPILL', 'GAS LEAK', 'UNKNOWN SUBSTANCE' },
+    },
+    typeOrder = { 'MEDICAL', 'FIRE', 'RESCUE', 'MVC', 'HAZMAT' },
+    dispositions = { 'TRANSPORTED', 'TREATED / RELEASED', 'REFUSAL SIGNED', 'FIRE OUT', 'NO PATIENT FOUND', 'CANCELLED EN ROUTE', 'HANDED TO LEO', 'FALSE ALARM' },
+    hospitals = { 'PILLBOX HILL MEDICAL', 'MOUNT ZONAH MEDICAL', 'SANDY SHORES MEDICAL', 'PALETO BAY MEDICAL' },
+    severities = { 'MINOR', 'MODERATE', 'SERIOUS', 'CRITICAL', 'DECEASED' },
+    conditions = { 'STABLE', 'IMPROVING', 'UNCHANGED', 'DETERIORATING', 'CRITICAL' },
+    stations = {
+        { id = 1, name = 'STATION 1', address = 'DAVIS AVE, DAVIS' },
+        { id = 7, name = 'STATION 7', address = 'PANORAMA DR, SANDY SHORES' },
+        { id = 9, name = 'STATION 9', address = 'PALETO BLVD, PALETO BAY' },
+    },
+    -- apparatus units can ride on (picked on the board)
+    apparatus = {
+        { id = 'E-12', type = 'ENGINE', station = 'STATION 1' }, { id = 'M-7', type = 'MEDIC', station = 'STATION 1' },
+        { id = 'L-3', type = 'LADDER', station = 'STATION 1' },  { id = 'E-19', type = 'ENGINE', station = 'STATION 7' },
+        { id = 'M-4', type = 'MEDIC', station = 'STATION 7' },   { id = 'BR-2', type = 'BRUSH', station = 'STATION 7' },
+        { id = 'E-21', type = 'ENGINE', station = 'STATION 9' }, { id = 'R-9', type = 'RESCUE', station = 'STATION 9' },
+    },
+    certifications = { 'FF I', 'FF II', 'EMT', 'Paramedic', 'Driver/Operator', 'Hazmat Ops', 'Rescue Tech' },
+    mutualAidTo = { 'SASP', 'BCSO', 'LSP', 'DOT' },
+    nearbyMeters = 60,              -- Address History radius
+    maydayAll = true,               -- MAYDAY alerts every on-duty unit (false = SAFR only)
+    minNarrative = 20,
+    -- report forms. Field types: text, area, narr (>= minNarrative), number,
+    -- person (civilian), incident, unit, or a list of options.
+    forms = {
+        { key = 'pcr', label = 'Patient Care Report', fields = {
+            { 'person', 'Patient', 'person', true }, { 'incident', 'Incident', 'incident' }, { 'complaint', 'Chief Complaint', 'text' },
+            { 'severity', 'Injury Severity', 'severities' }, { 'vitals', 'Vitals (BP / HR / RR / SpO2)', 'text' }, { 'condition', 'Patient Condition', 'conditions' },
+            { 'treatment', 'Treatment Provided', 'area' }, { 'destination', 'Transport Destination', 'hospitals+' }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'fireinc', label = 'Fire Incident Report', fields = {
+            { 'incident', 'Incident', 'incident' }, { 'ftype', 'Fire Type', { 'STRUCTURE', 'VEHICLE', 'BRUSH / WILDLAND', 'ALARM - NO FIRE', 'OTHER' } },
+            { 'property', 'Property Use', 'text' }, { 'origin', 'Area of Origin', 'text' },
+            { 'cause', 'Cause', { 'UNDETERMINED', 'ACCIDENTAL', 'INCENDIARY', 'NATURAL', 'UNDER INVESTIGATION' } },
+            { 'damage', 'Estimated Damage', { 'NONE', 'MINOR', 'MODERATE', 'MAJOR', 'TOTAL LOSS' } }, { 'apparatus', 'Apparatus on Scene', 'text' }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'rescue', label = 'Rescue Report', fields = {
+            { 'incident', 'Incident', 'incident' }, { 'rtype', 'Rescue Type', { 'WATER', 'HIGH ANGLE', 'CONFINED SPACE', 'ELEVATOR', 'VEHICLE EXTRICATION', 'SEARCH' } },
+            { 'victims', 'Victims', 'number' }, { 'equipment', 'Equipment Used', 'text' },
+            { 'outcome', 'Outcome', { 'RESCUED - NO INJURY', 'RESCUED - INJURED', 'RECOVERY', 'NOT LOCATED' } }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'mvc', label = 'Vehicle Collision Report', fields = {
+            { 'incident', 'Incident', 'incident' }, { 'vehicles', 'Vehicles Involved', 'number' }, { 'extrication', 'Extrication Required', { 'NO', 'YES' } },
+            { 'patients', 'Patients', 'number' }, { 'hazards', 'Hazards', { 'NONE', 'FUEL SPILL', 'FIRE', 'POWER LINES', 'AIRBAG UNDEPLOYED' } },
+            { 'person', 'Driver (optional)', 'person' }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'hazmat', label = 'Hazardous Material Report', fields = {
+            { 'incident', 'Incident', 'incident' }, { 'substance', 'Substance', 'text' }, { 'un', 'UN / NA Number', 'text' }, { 'qty', 'Estimated Quantity', 'text' },
+            { 'evac', 'Evacuation Radius', { 'NONE', '100 FT', '330 FT', '1000 FT', 'SHELTER IN PLACE' } },
+            { 'decon', 'Decon Performed', { 'NO', 'YES - GROSS', 'YES - TECHNICAL' } }, { 'narrative', 'Narrative', 'narr' } } },
+        { key = 'transport', label = 'Hospital Transport Report', fields = {
+            { 'person', 'Patient', 'person', true }, { 'incident', 'Incident', 'incident' }, { 'from', 'Picked Up From', 'text' },
+            { 'destination', 'Destination', 'hospitals' }, { 'tunit', 'Transport Unit', 'unit' },
+            { 'tpriority', 'Transport Priority', { 'EMERGENT (LIGHTS & SIREN)', 'NON-EMERGENT' } }, { 'condition', 'Condition on Arrival', 'conditions' }, { 'narrative', 'Narrative', 'narr' } } },
+    },
+}
+
+---------------------------------------------------------------------
 -- Unit statuses: CAD code -> UnitLink-Police status
 ---------------------------------------------------------------------
 Config.Statuses = {

@@ -59,7 +59,8 @@ CreateThread(function()
             dirty, sinceFull = false, 0
             local board = UL.board()
             for src in pairs(UL.viewers) do
-                if UL.officer(src) then
+                local o = UL.officer(src)
+                if o and o.kind == 'leo' then
                     UL.push(src, 'board', board)
                 else
                     UL.viewers[src] = nil
@@ -128,7 +129,8 @@ AddEventHandler('unitlink-police:server:unitsChanged', markDirty)
 ---------------------------------------------------------------------
 -- Requests
 ---------------------------------------------------------------------
-UL.handle('open', nil, function(o)
+UL.handle('open', { kind = 'any' }, function(o)
+    if o.kind == 'fire' then return Fire.open(o) end
     UL.viewers[o.src] = true
     local statuses = {}
     for _, s in ipairs(Config.Statuses) do statuses[#statuses + 1] = { code = s.code, label = s.label } end

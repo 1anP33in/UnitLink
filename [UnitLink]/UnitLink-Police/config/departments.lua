@@ -32,8 +32,8 @@ Config.Departments = {
         order = 4, short = 'DHS', name = 'Department of Homeland Security', type = 'leo', blipColor = 40,
         callsign = { pattern = '^%d%u%-%d%d$', example = '4H-01', minLength = 5, maxLength = 5 },
     },
-    safd = {
-        order = 5, short = 'SAFD', name = 'San Andreas Fire Department', type = 'fire', blipColor = 1,
+    safr = {
+        order = 5, short = 'SAFR', name = 'San Andreas Fire & Rescue', type = 'fire', blipColor = 1,
         callsign = { pattern = '^%u+%-%d+$', example = 'E-12', minLength = 3, maxLength = 8 },
     },
     faa = {
@@ -50,9 +50,10 @@ Config.Departments = {
 --   receives911  : gets /911 calls
 --   canPanic     : can use /panic
 --   receivesPanic: gets panic alerts
+--   fireCad      : opens the SAFR Fire & Rescue tablet (UnitLink-CAD) with /cad
 ---------------------------------------------------------------------
 Config.DepartmentTypes = {
     leo      = { roster = true,  showOnBlips = true,  seeBlips = true,  receives911 = true,  canPanic = true,  receivesPanic = true },
-    fire     = { roster = false, showOnBlips = false, seeBlips = false, receives911 = false, canPanic = false, receivesPanic = false },
+    fire     = { roster = false, showOnBlips = false, seeBlips = false, receives911 = false, canPanic = false, receivesPanic = false, fireCad = true },
     aviation = { roster = false, showOnBlips = false, seeBlips = false, receives911 = false, canPanic = false, receivesPanic = false },
 }

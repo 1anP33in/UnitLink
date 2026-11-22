@@ -32,17 +32,17 @@ UnitLink uses **plain FiveM ACE permissions only**. Permissions belong to a play
 | `unitlink.lsp.supervisor` | Police, CAD, HUD | LSP supervisor |
 | `unitlink.dhs.duty` | UnitLink-Police | Go on duty as **DHS** |
 | `unitlink.dhs.supervisor` | Police, CAD, HUD | DHS supervisor |
-| `unitlink.safd.duty` | UnitLink-Police | Go on duty as **SAFD** (fire) |
-| `unitlink.safd.supervisor` | Police, HUD | SAFD supervisor |
+| `unitlink.safr.duty` | UnitLink-Police | Go on duty as **SAFR** (Fire & Rescue). Opens the SAFR CAD with `/cad` |
+| `unitlink.safr.supervisor` | Police, CAD, HUD | SAFR supervisor: station announcements, close any incident, clear any MAYDAY, edit certifications, put apparatus out of service, "Captain" on the HUD |
 | `unitlink.faa.duty` | UnitLink-Police | Go on duty as **FAA** |
 | `unitlink.faa.supervisor` | Police, HUD | FAA supervisor |
 | `unitlink.police.supervisor` | Police, CAD | **Every** LEO department: close any 911 call, approve any warrant |
 
 **What needs no permission:**
-- **Civilians:** `/911`, `/civ` (making civilian profiles), the HUD.
-- **The CAD:** `/cad` opens for anyone on duty in a department that receives 911 (LEO), so duty is the gate.
+- **Civilians:** `/911`, `/911fire`, `/911ems`, `/civ` (making civilian profiles), the HUD.
+- **The CAD:** `/cad` opens the police CAD for LEO on duty and the SAFR CAD for SAFR on duty, so duty is the gate.
 
-> **Coming with later phases:** SAFR, DOT, the Civilian Portal and the Admin Dashboard will add nodes such as `unitlink.safr.*`, `unitlink.dot.*` and `unitlink.admin`. This file will be updated with each phase.
+> **Coming with later phases:** DOT, the Civilian Portal and the Admin Dashboard will add nodes such as `unitlink.dot.*` and `unitlink.admin`. This file will be updated with each phase.
 
 ---
 
@@ -80,11 +80,11 @@ add_principal group.dhs_supervisor group.dhs
 add_ace group.dhs_command     unitlink.dhs             allow
 add_principal group.dhs_command group.dhs_supervisor
 
-# SAFD (fire)
-add_ace group.safd            unitlink.safd.duty       allow
-add_ace group.safd_supervisor unitlink.safd.supervisor allow
-add_principal group.safd_supervisor group.safd
-add_ace group.safd_command    unitlink.safd            allow
+# SAFR (Fire & Rescue)
+add_ace group.safr            unitlink.safr.duty       allow
+add_ace group.safd_supervisor unitlink.safr.supervisor allow
+add_principal group.safd_supervisor group.safr
+add_ace group.safd_command    unitlink.safr            allow
 add_principal group.safd_command group.safd_supervisor
 
 # FAA
@@ -119,9 +119,9 @@ add_principal identifier.license:REPLACE_WITH_LICENSE group.sasp
 # Sergeant (SASP supervisor, also gets SASP duty)
 add_principal identifier.license:REPLACE_WITH_LICENSE group.sasp_supervisor
 
-# A player in two departments (SASP and SAFD)
+# A player in two departments (SASP and SAFR)
 add_principal identifier.license:REPLACE_WITH_LICENSE group.sasp
-add_principal identifier.license:REPLACE_WITH_LICENSE group.safd
+add_principal identifier.license:REPLACE_WITH_LICENSE group.safr
 
 # Chief of Police over every LEO department
 add_principal identifier.license:REPLACE_WITH_LICENSE group.leo_command

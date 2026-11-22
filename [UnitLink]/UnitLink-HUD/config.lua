@@ -68,7 +68,6 @@ Config.Jobs = {
     bcso = { color = '#c9a14a', title = 'Deputy',      supervisorTitle = 'Sergeant' },
     lsp  = { color = '#5ab8ff', title = 'Officer',     supervisorTitle = 'Sergeant' },
     dhs  = { color = '#9aa7b4', title = 'Agent',       supervisorTitle = 'Supervisor' },
-    safd = { color = '#ff6b5e', title = 'Firefighter', supervisorTitle = 'Captain' },
     safr = { color = '#ff6b5e', title = 'Firefighter', supervisorTitle = 'Captain' },
     dot  = { color = '#f59e0b', title = 'Technician',  supervisorTitle = 'Supervisor' },
     faa  = { color = '#b88cff', title = 'Inspector',   supervisorTitle = 'Supervisor' },

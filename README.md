@@ -8,7 +8,7 @@ UnitLink is an in-game CAD / MDT tablet for FiveM roleplay servers, together wit
 
 | Resource | Folder | What it does for UnitLink |
 |---|---|---|
-| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablet (`/cad` or F5) |
+| **UnitLink-CAD** | `[UnitLink]/UnitLink-CAD` | The CAD / MDT tablets (`/cad` or F5): the **police CAD** for LEO and the **SAFR Fire & Rescue CAD** for fire / EMS. Also `/civ` civilian profiles and `/911fire`, `/911ems` |
 | **UnitLink-Police** | `[UnitLink]/UnitLink-Police` | Calls, units, statuses, attaching and closing calls (CAD exports). 911 calls show up in UnitLink live, and changes made in the CAD show up on the 911 cards |
 | **UnitLink-Core** *(optional)* | `[UnitLink]/UnitLink-Core` | Character framework. Only needed if you want UnitLink-Core characters; without it, UnitLink is fully standalone |
 | **UnitLink-UI** | `[UnitLink]/UnitLink-UI` | Notifications |

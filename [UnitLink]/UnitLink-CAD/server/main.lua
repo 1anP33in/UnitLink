@@ -105,30 +105,37 @@ end
 -- Access: who is asking? (fresh every request, never trusted from client)
 -- Returns officer table or nil, error
 ---------------------------------------------------------------------
+-- kind: 'leo' (police CAD, Config.AccessFlag) or 'fire' (SAFR, Config.Fire.accessFlag)
 function UL.officer(src)
     local unit = Bridge.unit(src)
     if not unit then return nil, 'You must be on duty to use ' .. Config.Name .. '.' end
-    if Config.AccessFlag and not (unit.flags and unit.flags[Config.AccessFlag]) then
-        return nil, 'Your department does not have CAD access.'
+    local flags = unit.flags or {}
+    local kind = nil
+    if Config.Fire and Config.Fire.enabled and Config.Fire.accessFlag and flags[Config.Fire.accessFlag] then
+        kind = 'fire'
+    elseif not Config.AccessFlag or flags[Config.AccessFlag] then
+        kind = 'leo'
     end
+    if not kind then return nil, 'Your department does not have CAD access.' end
     local charId = Identity.officerId(src)
     if not charId then return nil, Identity.mode() == 'core' and 'No character loaded.' or 'Could not identify your account.' end
     local first, last = unit.name:match('^(%S+)%s+(.+)$')
     local short = last and (last:upper() .. ',' .. first:sub(1, 1):upper()) or unit.name:upper()
     return {
         src = src, charId = charId, callsign = unit.callsign, name = unit.name, short = short,
-        dept = unit.departmentShort, status = unit.status, calls = unit.calls,
+        dept = unit.departmentShort, department = unit.department, status = unit.status, calls = unit.calls,
         label = ('%s (%s)'):format(short, unit.callsign),
-        supervisor = Bridge.isSupervisor(src),
+        supervisor = Bridge.isSupervisor(src), kind = kind,
     }
 end
 
 ---------------------------------------------------------------------
 -- Request pipeline
---   UL.handle(action, { supervisor = bool }, function(officer, payload) return ok, data end)
+--   UL.handle(action, { supervisor = bool, kind = 'leo'|'fire'|'any' }, function(officer, payload) return ok, data end)
+--   kind defaults to 'leo' (police CAD).
 ---------------------------------------------------------------------
 function UL.handle(action, opts, fn)
-    UL.handlers[action] = { fn = fn, supervisor = opts and opts.supervisor }
+    UL.handlers[action] = { fn = fn, supervisor = opts and opts.supervisor, kind = opts and opts.kind or 'leo' }
 end
 
 RegisterNetEvent('unitlink:server:req', function(reqId, action, payload)
@@ -159,6 +166,7 @@ RegisterNetEvent('unitlink:server:req', function(reqId, action, payload)
 
     local officer, err = UL.officer(src)
     if not officer then return reply(false, err) end
+    if h.kind ~= 'any' and h.kind ~= officer.kind then return reply(false, 'That is not part of your CAD.') end
     if h.supervisor and not officer.supervisor then return reply(false, 'Supervisors only.') end
 
     local ok, success, data = pcall(h.fn, officer, type(payload) == 'table' and payload or {})

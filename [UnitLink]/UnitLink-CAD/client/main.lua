@@ -77,6 +77,13 @@ local function decorateBoard(b)
     for _, u in ipairs(b.units or {}) do u.location = streetAt(u.coords) or '' end
 end
 
+-- SAFR board: incidents get address / city / county, units get a location
+local function decorateFireBoard(b)
+    if type(b) ~= 'table' then return end
+    for _, inc in ipairs(b.incidents or {}) do decorateCall(inc) end
+    for _, u in ipairs(b.units or {}) do u.location = streetAt(u.coords) or '' end
+end
+
 local function myStreet()
     local c = GetEntityCoords(PlayerPedId())
     return streetAt({ x = c.x, y = c.y, z = c.z }) or ''
@@ -118,8 +125,8 @@ local function closeTablet()
     if not isOpen then return end
     isOpen = false
     SetNuiFocus(false, false)
-    SendNUIMessage({ action = mode == 'civ' and 'closeCiv' or 'close' })
-    if mode == 'cad' then TriggerServerEvent('unitlink:server:closed') end
+    SendNUIMessage({ action = mode == 'civ' and 'closeCiv' or mode == 'fire' and 'closeFire' or 'close' })
+    if mode == 'cad' or mode == 'fire' then TriggerServerEvent('unitlink:server:closed') end
     mode = nil
     stopTablet()
 end
@@ -129,6 +136,13 @@ local function openTablet()
     if IsPauseMenuActive() then return end
     local r = request('open')
     if not r.ok then return notify(r.data or 'Could not open the CAD.', 'error') end
+    if r.data.kind == 'fire' then
+        decorateFireBoard(r.data.board)
+        isOpen, mode = true, 'fire'
+        SetNuiFocus(true, true)
+        SendNUIMessage({ action = 'openFire', data = r.data })
+        return CreateThread(startTablet)
+    end
     decorateBoard(r.data.board)
     isOpen, mode = true, 'cad'
     SetNuiFocus(true, true)
@@ -151,6 +165,15 @@ local function openCiv()
 end
 RegisterCommand(Config.Civ.command, function() CreateThread(openCiv) end, false)
 
+-- civilians: /911fire <message> and /911ems <message> (SAFR)
+if Config.Fire and Config.Fire.enabled then
+    for kind, cmd in pairs(Config.Fire.commands) do
+        RegisterCommand(cmd, function(_, args)
+            TriggerServerEvent('unitlink:server:fire911', kind, table.concat(args, ' '), myStreet())
+        end, false)
+    end
+end
+
 RegisterCommand(Config.Command, function() CreateThread(openTablet) end, false)
 RegisterCommand('+unitlink_open', function() CreateThread(openTablet) end, false)
 RegisterCommand('-unitlink_open', function() end, false)
@@ -159,6 +182,10 @@ CreateThread(function()
     Wait(1000)
     TriggerEvent('chat:addSuggestion', '/' .. Config.Command, 'Open the ' .. Config.Name .. ' CAD')
     TriggerEvent('chat:addSuggestion', '/' .. Config.Civ.command, 'Civilian ID: create or pick your civilian profile')
+    if Config.Fire and Config.Fire.enabled then
+        TriggerEvent('chat:addSuggestion', '/' .. Config.Fire.commands.fire, 'Report a fire to Fire & Rescue', { { name = 'message', help = 'What is burning and where' } })
+        TriggerEvent('chat:addSuggestion', '/' .. Config.Fire.commands.medical, 'Call for an ambulance (Fire & Rescue)', { { name = 'message', help = 'Who is hurt and how' } })
+    end
     TriggerEvent('chat:removeSuggestion', '/+unitlink_open')
     TriggerEvent('chat:removeSuggestion', '/-unitlink_open')
 end)
@@ -178,11 +205,16 @@ RegisterNUICallback('req', function(data, cb)
         return cb({ ok = true })
     end
 
-    if action == 'createCall' then payload.street = myStreet() end
+    if action == 'createCall' or action == 'fire.create' or action == 'fire.mayday' then payload.street = myStreet() end
 
     local r = request(action, payload)
     if r.ok then
         if action == 'board' then decorateBoard(r.data) end
+        if action == 'fire.board' then decorateFireBoard(r.data) end
+        if action == 'fire.get' and type(r.data) == 'table' and r.data.incident then decorateCall(r.data.incident) end
+        if action == 'fire.waypoint' and type(r.data) == 'table' and r.data.coords then
+            SetNewWaypoint(r.data.coords.x + 0.0, r.data.coords.y + 0.0)
+        end
         if action == 'getCall' and type(r.data) == 'table' then decorateCall(r.data.call) end
         if action == 'waypoint' and type(r.data) == 'table' and r.data.coords then
             SetNewWaypoint(r.data.coords.x + 0.0, r.data.coords.y + 0.0)
@@ -193,18 +225,24 @@ end)
 
 -- server pushes (board, notes, alerts, signal 100, force close)
 RegisterNetEvent('unitlink:client:push', function(kind, data)
-    if not isOpen or mode ~= 'cad' then return end
+    if not isOpen or (mode ~= 'cad' and mode ~= 'fire') then return end
     if kind == 'forceClose' then
         closeTablet()
         return notify(data or 'CAD closed.', 'warning')
     end
+    if mode == 'fire' then
+        if kind:sub(1, 4) ~= 'fire' then return end
+        if kind == 'fireBoard' then decorateFireBoard(data) end
+        return SendNUIMessage({ action = 'firePush', kind = kind, data = data })
+    end
+    if kind:sub(1, 4) == 'fire' then return end
     if kind == 'board' then decorateBoard(data) end
     SendNUIMessage({ action = 'push', kind = kind, data = data })
 end)
 
 -- going off duty closes the tablet
 AddEventHandler('unitlink-police:dutyChanged', function(onDuty)
-    if not onDuty and mode == 'cad' then closeTablet() end
+    if not onDuty and (mode == 'cad' or mode == 'fire') then closeTablet() end
 end)
 
 AddEventHandler('onResourceStop', function(res)
