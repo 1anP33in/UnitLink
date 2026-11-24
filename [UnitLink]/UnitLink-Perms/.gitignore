@@ -1,0 +1,15 @@
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+
+# Server and runtime output
+server.cfg
+*.log
+logs/
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
